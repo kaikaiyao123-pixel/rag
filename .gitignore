@@ -1,0 +1,21 @@
+.rag_index/
+__pycache__/
+*.pyc
+config.json
+
+# 简历构建工作目录（临时产物，与 RAG 项目无关）
+.resume_work/
+
+# 面试材料工作目录（临时产物，与 RAG 项目无关）
+.interview/
+
+# 本地虚拟环境（code/C8/.venv，约 1.3 GB，可依 requirements.txt 重建）
+.venv/
+
+# 测试语料：HowToCook 的独立克隆仓库，体积约 79 MB
+# 如需入库，删除本行后自行拉取：git clone https://github.com/Anduin2017/HowToCook
+data/
+
+# AI 工作目录与系统快捷方式
+.workbuddy-ai/
+*.lnk

@@ -1,0 +1,32 @@
+{
+  "docs": ["docs"],
+  "index_dir": ".rag_index",
+  "extensions": [".md", ".markdown", ".txt"],
+  "exclude": [],
+  "chunk": {
+    "max_chars": 600,
+    "min_chars": 120,
+    "overlap": 100
+  },
+  "retrieval": {
+    "top_k": 5,
+    "candidate_k": 30,
+    "max_per_doc": 3,
+    "min_rel_score": 0.0,
+    "heading_boost": 1.8,
+    "coverage_weight": 0.4
+  },
+  "abstain": {
+    "vocab_cov": 0.32,
+    "idf_cov": 0.18,
+    "norm_score": 0.0
+  },
+  "llm": {
+    "api_base": "https://api.deepseek.com/v1",
+    "api_key": "",
+    "model": "deepseek-chat",
+    "temperature": 0.2,
+    "timeout": 60,
+    "max_context_chars": 6000
+  }
+}

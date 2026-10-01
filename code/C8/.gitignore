@@ -1,0 +1,19 @@
+# 虚拟环境
+.venv/
+__pycache__/
+*.pyc
+
+# 向量索引缓存（自动生成）
+vector_index/
+
+# 密钥
+.env
+
+# 日志（基准报告作为可复现证据保留）
+*.log
+!benchmark_retrieval.log
+
+# 自检与基准用的临时索引目录
+_selftest_index/
+_bench_index/
+_faiss_*/

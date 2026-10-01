@@ -1,0 +1,357 @@
+{
+  "meta": {
+    "generated_at": "2026-09-25 14:40:08",
+    "corpus": {
+      "docs": 12,
+      "chunks": 98,
+      "terms": 3991,
+      "chars": 16808,
+      "avgdl": 90.8
+    },
+    "label_set": {
+      "in_domain": 71,
+      "out_of_domain": 7
+    },
+    "protocol": {
+      "candidate_k": 30,
+      "max_per_doc": 3,
+      "top_k": 5,
+      "mrr_k": 10
+    }
+  },
+  "metrics": {
+    "full": {
+      "queries": 71,
+      "doc_recall": {
+        "@1": 0.8873,
+        "@3": 0.9718,
+        "@5": 1.0
+      },
+      "passage_hit": {
+        "@1": 0.8028,
+        "@3": 0.9577,
+        "@5": 0.9859
+      },
+      "mrr@10": 0.9329,
+      "passage_misses": 1,
+      "mean_top1_score": 32.36,
+      "_misses": [
+        {
+          "query": "怎么按时间范围筛选笔记？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "updated:",
+          "doc_rank": 5,
+          "top1": "docs/pricing.md",
+          "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
+        }
+      ]
+    },
+    "bm25_plain": {
+      "queries": 71,
+      "doc_recall": {
+        "@1": 0.8451,
+        "@3": 0.9718,
+        "@5": 1.0
+      },
+      "passage_hit": {
+        "@1": 0.7606,
+        "@3": 0.9437,
+        "@5": 0.9859
+      },
+      "mrr@10": 0.9094,
+      "passage_misses": 1,
+      "mean_top1_score": 18.516,
+      "_misses": [
+        {
+          "query": "怎么按时间范围筛选笔记？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "updated:",
+          "doc_rank": 5,
+          "top1": "docs/pricing.md",
+          "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
+        }
+      ]
+    },
+    "tfidf": {
+      "queries": 71,
+      "doc_recall": {
+        "@1": 0.8592,
+        "@3": 0.9718,
+        "@5": 0.9859
+      },
+      "passage_hit": {
+        "@1": 0.7324,
+        "@3": 0.9155,
+        "@5": 0.9437
+      },
+      "mrr@10": 0.9136,
+      "passage_misses": 4,
+      "mean_top1_score": 0.268,
+      "_misses": [
+        {
+          "query": "怎么在检索中排除某个关键词？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "排除",
+          "doc_rank": 1,
+          "top1": "docs/search-syntax.md",
+          "top1_head": "云雀笔记 · 检索语法与高级搜索 › 基础检索"
+        },
+        {
+          "query": "怎么按时间范围筛选笔记？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "updated:",
+          "doc_rank": 5,
+          "top1": "docs/pricing.md",
+          "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
+        },
+        {
+          "query": "插件的权限怎么声明？",
+          "expected_doc": "docs/plugin-api.md",
+          "must": "permissions",
+          "doc_rank": 1,
+          "top1": "docs/plugin-api.md",
+          "top1_head": "云雀笔记 · 插件开发接口 › 调试与发布"
+        },
+        {
+          "query": "哪个版本开始支持局域网同步？",
+          "expected_doc": "docs/release-notes.md",
+          "must": "局域网直连同步",
+          "doc_rank": null,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 核心功能 › 版本历史"
+        }
+      ]
+    },
+    "keyword": {
+      "queries": 71,
+      "doc_recall": {
+        "@1": 0.7324,
+        "@3": 0.9718,
+        "@5": 0.9859
+      },
+      "passage_hit": {
+        "@1": 0.6479,
+        "@3": 0.9296,
+        "@5": 0.9718
+      },
+      "mrr@10": 0.8486,
+      "passage_misses": 2,
+      "mean_top1_score": 5.38,
+      "_misses": [
+        {
+          "query": "知识库默认存放在哪个目录？",
+          "expected_doc": "docs/faq.md",
+          "must": "文档/云雀笔记/",
+          "doc_rank": 2,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 数据与隐私"
+        },
+        {
+          "query": "怎么按时间范围筛选笔记？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "updated:",
+          "doc_rank": null,
+          "top1": "docs/pricing.md",
+          "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
+        }
+      ]
+    }
+  },
+  "refusal": {
+    "queries_out_of_domain": 7,
+    "refused": 7,
+    "refusal_accuracy": 1.0,
+    "queries_in_domain": 71,
+    "falsely_refused": 0,
+    "false_refusal_rate": 0.0,
+    "balanced_accuracy": 1.0
+  },
+  "refusal_calibration": {
+    "best": {
+      "vocab_cov": 0.32,
+      "idf_cov": 0.18,
+      "norm_score": 0.0,
+      "refusal_accuracy": 1.0,
+      "false_refusal_rate": 0.0,
+      "balanced_accuracy": 1.0,
+      "robustness_margin": 0.0091,
+      "tied_optima": 84
+    },
+    "pareto": [
+      {
+        "vocab_cov": 0.32,
+        "idf_cov": 0.2,
+        "norm_score": 0.3,
+        "refusal_accuracy": 1.0,
+        "false_refusal_rate": 0.0,
+        "balanced_accuracy": 1.0,
+        "robustness_margin": 0.0076
+      },
+      {
+        "vocab_cov": 0.32,
+        "idf_cov": 0.15,
+        "norm_score": 0.25,
+        "refusal_accuracy": 0.8571,
+        "false_refusal_rate": 0.0,
+        "balanced_accuracy": 0.9286,
+        "robustness_margin": 0.0025
+      },
+      {
+        "vocab_cov": 0.2,
+        "idf_cov": 0.1,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.7143,
+        "false_refusal_rate": 0.0,
+        "balanced_accuracy": 0.8571,
+        "robustness_margin": 0.0
+      },
+      {
+        "vocab_cov": 0.0,
+        "idf_cov": 0.1,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.5714,
+        "false_refusal_rate": 0.0,
+        "balanced_accuracy": 0.7857,
+        "robustness_margin": 0.0
+      },
+      {
+        "vocab_cov": 0.0,
+        "idf_cov": 0.0,
+        "norm_score": 0.15,
+        "refusal_accuracy": 0.2857,
+        "false_refusal_rate": 0.0,
+        "balanced_accuracy": 0.6429,
+        "robustness_margin": 0.007
+      },
+      {
+        "vocab_cov": 0.0,
+        "idf_cov": 0.0,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.0,
+        "false_refusal_rate": 0.0,
+        "balanced_accuracy": 0.5,
+        "robustness_margin": 0.0255
+      },
+      {
+        "vocab_cov": 0.4,
+        "idf_cov": 0.2,
+        "norm_score": 0.3,
+        "refusal_accuracy": 1.0,
+        "false_refusal_rate": 0.0141,
+        "balanced_accuracy": 0.993,
+        "robustness_margin": 0.0076
+      },
+      {
+        "vocab_cov": 0.4,
+        "idf_cov": 0.15,
+        "norm_score": 0.25,
+        "refusal_accuracy": 0.8571,
+        "false_refusal_rate": 0.0141,
+        "balanced_accuracy": 0.9215,
+        "robustness_margin": 0.0025
+      },
+      {
+        "vocab_cov": 0.45,
+        "idf_cov": 0.2,
+        "norm_score": 0.3,
+        "refusal_accuracy": 1.0,
+        "false_refusal_rate": 0.0282,
+        "balanced_accuracy": 0.9859,
+        "robustness_margin": 0.0049
+      },
+      {
+        "vocab_cov": 0.45,
+        "idf_cov": 0.15,
+        "norm_score": 0.25,
+        "refusal_accuracy": 0.8571,
+        "false_refusal_rate": 0.0282,
+        "balanced_accuracy": 0.9145,
+        "robustness_margin": 0.0025
+      },
+      {
+        "vocab_cov": 0.4,
+        "idf_cov": 0.2,
+        "norm_score": 0.35,
+        "refusal_accuracy": 1.0,
+        "false_refusal_rate": 0.0423,
+        "balanced_accuracy": 0.9789,
+        "robustness_margin": 0.0005
+      },
+      {
+        "vocab_cov": 0.45,
+        "idf_cov": 0.2,
+        "norm_score": 0.35,
+        "refusal_accuracy": 1.0,
+        "false_refusal_rate": 0.0563,
+        "balanced_accuracy": 0.9718,
+        "robustness_margin": 0.0005
+      }
+    ],
+    "in_domain_features": {
+      "vocab_cov": {
+        "mean": 0.6585,
+        "p10": 0.4615,
+        "p50": 0.6667,
+        "p90": 0.8125
+      },
+      "idf_cov": {
+        "mean": 0.4374,
+        "p10": 0.2477,
+        "p50": 0.4103,
+        "p90": 0.6655
+      },
+      "norm_score": {
+        "mean": 0.9538,
+        "p10": 0.4677,
+        "p50": 0.7548,
+        "p90": 1.7829
+      }
+    },
+    "out_of_domain_features": {
+      "vocab_cov": {
+        "mean": 0.1848,
+        "p10": 0.0833,
+        "p50": 0.0833,
+        "p90": 0.2
+      },
+      "idf_cov": {
+        "mean": 0.0919,
+        "p10": 0.0739,
+        "p50": 0.0769,
+        "p90": 0.1012
+      },
+      "norm_score": {
+        "mean": 0.1737,
+        "p10": 0.0847,
+        "p50": 0.1739,
+        "p90": 0.2368
+      }
+    }
+  },
+  "refusal_baseline_legacy": {
+    "queries": 7,
+    "refused": 2,
+    "refusal_accuracy": 0.2857,
+    "mean_top1_score": 8.272
+  },
+  "latency": {
+    "samples": 390,
+    "mean_ms": 0.143,
+    "p50_ms": 0.115,
+    "p95_ms": 0.337,
+    "p99_ms": 0.43,
+    "max_ms": 0.584
+  },
+  "index": {
+    "index_bytes": 232644,
+    "index_kb": 227.2,
+    "corpus_chars": 16808,
+    "ratio": 13.841,
+    "load_heap_peak_kb": 2701.4
+  },
+  "timing": {
+    "parse_s": 0.0047,
+    "index_build_s": 0.0126,
+    "total_build_s": 0.0173
+  }
+}
