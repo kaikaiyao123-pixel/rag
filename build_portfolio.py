@@ -720,7 +720,7 @@ python rag.py ask "如何导入已有笔记？"
 <span class="c"># 3. 只看检索结果与得分</span>
 python rag.py search "导出支持哪些格式" -k 5
 
-<span class="c"># 4. 端到端自检（{src['code']} 行代码，29 项断言）</span>
+<span class="c"># 4. 端到端自检（{src['code']} 行代码，34 项断言）</span>
 python selftest.py
 
 <span class="c"># 5. 复现本文全部评测数据与图表</span>

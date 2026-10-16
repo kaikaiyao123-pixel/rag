@@ -232,8 +232,15 @@ def make_rankers(index: BM25Index) -> Dict[str, Callable[[str], List[Tuple[int, 
                                       candidate_k=len(index.chunks),
                                       max_per_doc=0)]
 
+    # 两个基线都必须显式打破并列（二级键 chunk_id），且查询词项按字典序展开。
+    # 原因：keyword 是整数命中计数，并列极多；而 sorted/sort 属稳定排序，并列项
+    # 会继承 acc 的插入顺序，插入顺序又取决于 set(tokenize(query)) 的迭代顺序 ——
+    # 后者受 PYTHONHASHSEED 随机化影响。若不打破并列，同一份代码、同一份语料，
+    # 换一个进程就会跑出不同指标（实测 keyword MRR@10 在 0.8380~0.8514 间漂移）。
+    # 生产路径 index.py 的 results.sort 早已使用 (-score, chunk_id) 二级键，
+    # 这里补齐同一约定，使评测结果可复现。
     def rank_tfidf(query: str) -> List[Tuple[int, float]]:
-        qv = {t: index.idf[t] for t in set(tokenize(query)) if t in index.idf}
+        qv = {t: index.idf[t] for t in sorted(set(tokenize(query))) if t in index.idf}
         if not qv:
             return []
         qnorm = math.sqrt(sum(w * w for w in qv.values())) or 1.0
@@ -242,15 +249,15 @@ def make_rankers(index: BM25Index) -> Dict[str, Callable[[str], List[Tuple[int, 
             for cid, f in index.postings.get(t, {}).items():
                 acc[cid] = acc.get(cid, 0.0) + (f / (index.doc_len[cid] or 1)) * w * w
         scored = [(cid, s / (doc_norms[cid] * qnorm)) for cid, s in acc.items()]
-        scored.sort(key=lambda x: -x[1])
+        scored.sort(key=lambda x: (-x[1], x[0]))
         return scored
 
     def rank_keyword(query: str) -> List[Tuple[int, float]]:
         acc: Dict[int, float] = {}
-        for t in set(tokenize(query)):
+        for t in sorted(set(tokenize(query))):
             for cid in index.postings.get(t, {}):
                 acc[cid] = acc.get(cid, 0.0) + 1.0
-        scored = sorted(acc.items(), key=lambda x: -x[1])
+        scored = sorted(acc.items(), key=lambda x: (-x[1], x[0]))
         return scored
 
     return {"full": rank_full, "bm25_plain": rank_plain,

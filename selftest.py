@@ -6,6 +6,7 @@
 
 不依赖任何网络与第三方库。退出码 0 表示全部通过。
 """
+import json
 import os
 import shutil
 import sys
@@ -133,6 +134,47 @@ def main():
               [h["chunk_id"] for h in h1] == [h["chunk_id"] for h in h2])
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+    print("\n== 8. 文档与评测数据一致性 ==")
+    # README 的指标表必须与 benchmark_report.json 逐项一致。这条约定此前只靠人工
+    # 遵守，实测已漂移过：keyword 行曾长期停留在一次更早运行的残值上。这里做成
+    # 断言，改评测后忘了同步 README 会直接让自检失败。
+    root = os.path.dirname(os.path.abspath(__file__))
+    rep_path = os.path.join(root, "benchmark_report.json")
+    readme_path = os.path.join(root, "README.md")
+    if not (os.path.isfile(rep_path) and os.path.isfile(readme_path)):
+        check("benchmark_report.json 与 README.md 均存在", False, "缺少文件")
+    else:
+        with open(rep_path, encoding="utf-8") as f:
+            metrics = json.load(f)["metrics"]
+        with open(readme_path, encoding="utf-8") as f:
+            readme = f.read()
+        # README 表格行标签（前缀匹配）→ 报告中的方法键
+        label2key = [("本方案", "full"), ("纯 Okapi BM25", "bm25_plain"),
+                     ("TF-IDF 余弦", "tfidf"), ("关键词命中计数", "keyword")]
+        found = set()
+        for line in readme.splitlines():
+            if not line.startswith("|"):
+                continue
+            cells = [c.strip().replace("*", "") for c in line.strip("|").split("|")]
+            if len(cells) != 5:
+                continue
+            hit = next((lb for lb, _ in label2key if cells[0].startswith(lb)), None)
+            if hit is None or hit in found:
+                continue
+            found.add(hit)
+            m = metrics[dict(label2key)[hit]]
+            want = [m["doc_recall"]["@1"], m["passage_hit"]["@1"],
+                    m["passage_hit"]["@5"], m["mrr@10"]]
+            try:
+                got = [float(c) for c in cells[1:]]
+            except ValueError:
+                check(f"README 指标行「{hit}」四个数字可解析", False, str(cells[1:]))
+                continue
+            check(f"README 指标行「{hit}」与 benchmark_report.json 一致",
+                  all(abs(round(w, 3) - g) < 5e-4 for w, g in zip(want, got)),
+                  f"README={got} 报告={[round(w, 3) for w in want]}")
+        check("README 指标表含全部四个方法行", len(found) == 4, f"找到 {sorted(found)}")
 
     print(f"\n{'=' * 46}\n通过 {PASS} 项，失败 {FAIL} 项")
     return 1 if FAIL else 0

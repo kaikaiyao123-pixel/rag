@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-09-25 14:40:08",
+    "generated_at": "2026-10-16 21:26:05",
     "corpus": {
       "docs": 12,
       "chunks": 98,
@@ -125,17 +125,17 @@
     "keyword": {
       "queries": 71,
       "doc_recall": {
-        "@1": 0.7324,
+        "@1": 0.7042,
         "@3": 0.9718,
         "@5": 0.9859
       },
       "passage_hit": {
         "@1": 0.6479,
         "@3": 0.9296,
-        "@5": 0.9718
+        "@5": 0.9577
       },
-      "mrr@10": 0.8486,
-      "passage_misses": 2,
+      "mrr@10": 0.8322,
+      "passage_misses": 3,
       "mean_top1_score": 5.38,
       "_misses": [
         {
@@ -153,6 +153,14 @@
           "doc_rank": null,
           "top1": "docs/pricing.md",
           "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
+        },
+        {
+          "query": "日志文件保存在哪里？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "logs",
+          "doc_rank": 2,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 数据存储在哪里？"
         }
       ]
     }
@@ -336,11 +344,11 @@
   },
   "latency": {
     "samples": 390,
-    "mean_ms": 0.143,
-    "p50_ms": 0.115,
-    "p95_ms": 0.337,
-    "p99_ms": 0.43,
-    "max_ms": 0.584
+    "mean_ms": 0.195,
+    "p50_ms": 0.148,
+    "p95_ms": 0.537,
+    "p99_ms": 0.725,
+    "max_ms": 0.854
   },
   "index": {
     "index_bytes": 232644,
@@ -350,8 +358,8 @@
     "load_heap_peak_kb": 2701.4
   },
   "timing": {
-    "parse_s": 0.0047,
-    "index_build_s": 0.0126,
-    "total_build_s": 0.0173
+    "parse_s": 0.005,
+    "index_build_s": 0.015,
+    "total_build_s": 0.02
   }
 }
