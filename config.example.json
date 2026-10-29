@@ -21,6 +21,7 @@
     "idf_cov": 0.18,
     "norm_score": 0.0
   },
+  "synonyms": {},
   "llm": {
     "api_base": "https://api.deepseek.com/v1",
     "api_key": "",

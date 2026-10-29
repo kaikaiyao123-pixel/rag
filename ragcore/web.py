@@ -289,10 +289,14 @@ def make_handler(ctx: Dict[str, Any]):
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
 
             hits = result["hits"]
-            feats = abstain_features(question, hits, retriever.idf,
+            # 诊断特征必须与 _answer_once 用同一个查询串，否则同义词扩展生效时
+            # 页面显示的 vocab_cov / idf_cov 与真实判定依据不一致。
+            q_used = result.get("query_used", question)
+            feats = abstain_features(q_used, hits, retriever.idf,
                                      idx.postings)
             self._json(200, {
                 "question": question,
+                "query_used": q_used,
                 "answer": result["answer"],
                 "note": result["note"],
                 "abstained": result["abstained"],

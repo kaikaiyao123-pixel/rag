@@ -29,6 +29,9 @@ MUTATIONS = [
      '_SENT_SPLIT_RE = re.compile(r"(?<=[。！？；\\n])|(?<=[.!?;])(?=\\s|$)")',
      '_SENT_SPLIT_RE = re.compile(r"(?<=[。！？；\\n.!?;])")',
      ["TC-GEN-011"]),
+    ("M6 同义词扩展失效（别名不再追加）", "ragcore/query.py",
+     '    return question + " " + " ".join(extra)', '    return question',
+     ["TC-RET-005"]),
 ]
 
 

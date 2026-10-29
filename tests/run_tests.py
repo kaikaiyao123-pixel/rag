@@ -31,6 +31,7 @@ MODULES = (
     "test_unit_index",
     "test_unit_abstain",
     "test_unit_generator",
+    "test_unit_query",
     "test_unit_config",
     "test_integration",
     "test_robustness",

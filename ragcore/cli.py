@@ -25,6 +25,7 @@ from .generator import (LLMClient, LLMError, build_messages, extractive_answer,
                         format_context)
 from .index import BM25Index
 from .loader import DEFAULT_EXTENSIONS, discover_documents, read_text, sha1_of
+from .query import expand
 from .retriever import Retriever
 from .tokenizer import tokenize
 
@@ -47,6 +48,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "idf_cov": 0.18,
         "norm_score": 0.0,
     },
+    # 同义词扩展表：{原词: [别名, ...]}。默认为空 —— 关闭时检索行为与未实现
+    # 该功能前完全一致，因此 docs/ 语料的 143 条标注集评测不受影响。
+    "synonyms": {},
     "llm": {
         "api_base": "https://api.deepseek.com/v1",
         "api_key": "",
@@ -237,14 +241,18 @@ def cmd_ingest(args, cfg: Dict) -> int:
 # ------------------------------------------------------------------------ ask
 def _answer_once(question: str, retriever: Retriever, cfg: Dict,
                  no_llm: bool, top_k: Optional[int]) -> Dict:
-    hits = retriever.retrieve(question, top_k=top_k)
+    # 同义词扩展只改"送去检索的查询串"，不改用户看到的 question。
+    # 扩展必须在检索、拒答特征、抽取式生成三处保持一致 —— 三处若用了不同的
+    # 查询串，会出现"检索按扩展词命中、拒答按原词判低覆盖"的自相矛盾结果。
+    q = expand(question, cfg.get("synonyms"))
+    hits = retriever.retrieve(q, top_k=top_k)
     l = cfg["llm"]
     llm = build_llm(cfg)
     used_llm = False
     note = ""
 
     # 拒答判定先于生成：资料不足时直接拒答，避免大模型在无关片段上编造答案
-    abstained = should_abstain(question, hits, retriever.idf,
+    abstained = should_abstain(q, hits, retriever.idf,
                                retriever.index.postings,
                                cfg.get("abstain"))
     if abstained:
@@ -252,27 +260,28 @@ def _answer_once(question: str, retriever: Retriever, cfg: Dict,
         if not hits:
             note = "（知识库中没有任何片段与问题相关。）"
         else:
-            f = abstain_features(question, hits, retriever.idf,
+            f = abstain_features(q, hits, retriever.idf,
                                  retriever.index.postings)
             note = (f"（拒答判定：资料不足。vocab_cov={f['vocab_cov']:.2f}，"
                     f"idf_cov={f['idf_cov']:.2f}。问题词项在知识库中覆盖过低，"
                     "强行作答极易产生幻觉，故不予回答。）")
     elif no_llm or not llm.available:
-        answer = extractive_answer(question, hits, retriever.idf)
+        answer = extractive_answer(q, hits, retriever.idf)
         note = ("（离线抽取式回答：未调用大模型，仅摘录原文最相关的句子。"
                 "该模式不做推理与汇总，摘录内容可能来自相邻条目，"
                 "请以引用来源原文为准；配置大模型可显著提升回答质量。）")
     else:
         try:
-            answer = llm.chat(build_messages(question, hits,
+            answer = llm.chat(build_messages(q, hits,
                                              l.get("max_context_chars", 6000)))
             used_llm = True
         except LLMError as e:
-            answer = extractive_answer(question, hits, retriever.idf)
+            answer = extractive_answer(q, hits, retriever.idf)
             note = f"（大模型调用失败，已回退离线抽取：{e}）"
 
-    return {"question": question, "answer": answer, "hits": hits,
-            "abstained": abstained, "used_llm": used_llm, "note": note}
+    return {"question": question, "query_used": q, "answer": answer,
+            "hits": hits, "abstained": abstained, "used_llm": used_llm,
+            "note": note}
 
 
 def cmd_ask(args, cfg: Dict) -> int:
