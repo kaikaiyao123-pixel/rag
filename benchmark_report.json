@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-10-16 21:26:05",
+    "generated_at": "2026-10-29 11:12:02",
     "corpus": {
       "docs": 12,
       "chunks": 98,
@@ -9,8 +9,14 @@
       "avgdl": 90.8
     },
     "label_set": {
-      "in_domain": 71,
-      "out_of_domain": 7
+      "in_domain": 143,
+      "out_of_domain": 7,
+      "by_tier": {
+        "basic": 71,
+        "paraphrase": 24,
+        "detail": 24,
+        "confusable": 24
+      }
     },
     "protocol": {
       "candidate_k": 30,
@@ -21,20 +27,20 @@
   },
   "metrics": {
     "full": {
-      "queries": 71,
+      "queries": 143,
       "doc_recall": {
-        "@1": 0.8873,
-        "@3": 0.9718,
-        "@5": 1.0
+        "@1": 0.8392,
+        "@3": 0.9371,
+        "@5": 0.972
       },
       "passage_hit": {
-        "@1": 0.8028,
-        "@3": 0.9577,
-        "@5": 0.9859
+        "@1": 0.7692,
+        "@3": 0.9021,
+        "@5": 0.9231
       },
-      "mrr@10": 0.9329,
-      "passage_misses": 1,
-      "mean_top1_score": 32.36,
+      "mrr@10": 0.8908,
+      "passage_misses": 11,
+      "mean_top1_score": 28.466,
       "_misses": [
         {
           "query": "怎么按时间范围筛选笔记？",
@@ -43,24 +49,104 @@
           "doc_rank": 5,
           "top1": "docs/pricing.md",
           "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
+        },
+        {
+          "query": "这个软件适合哪些人使用？",
+          "expected_doc": "docs/product-overview.md",
+          "must": "咨询顾问",
+          "doc_rank": 4,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 导出支持哪些格式？"
+        },
+        {
+          "query": "换电脑了怎么把旧笔记带过来？",
+          "expected_doc": "docs/faq.md",
+          "must": "Markdown 文件夹",
+          "doc_rank": 1,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "两台电脑同时改了同一篇会怎样？",
+          "expected_doc": "docs/sync-guide.md",
+          "must": "保留双方版本",
+          "doc_rank": 3,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 支持多设备同步吗？"
+        },
+        {
+          "query": "只想在标题里找某个词，怎么搜？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "title:",
+          "doc_rank": 5,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "自己写的小工具怎么装进去？",
+          "expected_doc": "docs/plugin-api.md",
+          "must": "manifest.json",
+          "doc_rank": null,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 产品定位"
+        },
+        {
+          "query": "我的笔记会被传到服务器上吗？",
+          "expected_doc": "docs/security-privacy.md",
+          "must": "不存在任何形式的数据上传",
+          "doc_rank": null,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 核心功能 › 双向链接"
+        },
+        {
+          "query": "打开就一片空白怎么排查？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "安全模式启动",
+          "doc_rank": 3,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "删掉的笔记多久内还能找回？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "保留 30 天",
+          "doc_rank": 1,
+          "top1": "docs/troubleshooting.md",
+          "top1_head": "云雀笔记 · 故障排查手册 › 索引与检索问题 › 检索结果中缺少明显相关的笔记"
+        },
+        {
+          "query": "最新版加了哪些功能？",
+          "expected_doc": "docs/release-notes.md",
+          "must": "2.4.0",
+          "doc_rank": null,
+          "top1": "docs/team-collaboration.md",
+          "top1_head": "云雀笔记 · 团队协作指南 › 编辑与冲突"
+        },
+        {
+          "query": "手机和电脑怎么互传笔记？",
+          "expected_doc": "docs/mobile-app.md",
+          "must": "mDNS 发现后配对",
+          "doc_rank": null,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
         }
       ]
     },
     "bm25_plain": {
-      "queries": 71,
+      "queries": 143,
       "doc_recall": {
-        "@1": 0.8451,
-        "@3": 0.9718,
-        "@5": 1.0
+        "@1": 0.8182,
+        "@3": 0.9231,
+        "@5": 0.972
       },
       "passage_hit": {
-        "@1": 0.7606,
-        "@3": 0.9437,
-        "@5": 0.9859
+        "@1": 0.7552,
+        "@3": 0.8811,
+        "@5": 0.9231
       },
-      "mrr@10": 0.9094,
-      "passage_misses": 1,
-      "mean_top1_score": 18.516,
+      "mrr@10": 0.878,
+      "passage_misses": 11,
+      "mean_top1_score": 16.935,
       "_misses": [
         {
           "query": "怎么按时间范围筛选笔记？",
@@ -69,24 +155,104 @@
           "doc_rank": 5,
           "top1": "docs/pricing.md",
           "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
+        },
+        {
+          "query": "这个软件适合哪些人使用？",
+          "expected_doc": "docs/product-overview.md",
+          "must": "咨询顾问",
+          "doc_rank": 4,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 导出支持哪些格式？"
+        },
+        {
+          "query": "换电脑了怎么把旧笔记带过来？",
+          "expected_doc": "docs/faq.md",
+          "must": "Markdown 文件夹",
+          "doc_rank": 1,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "两台电脑同时改了同一篇会怎样？",
+          "expected_doc": "docs/sync-guide.md",
+          "must": "保留双方版本",
+          "doc_rank": 3,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 支持多设备同步吗？"
+        },
+        {
+          "query": "只想在标题里找某个词，怎么搜？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "title:",
+          "doc_rank": 5,
+          "top1": "docs/markdown-guide.md",
+          "top1_head": "云雀笔记 · Markdown 语法支持 › 双向链接与标签"
+        },
+        {
+          "query": "自己写的小工具怎么装进去？",
+          "expected_doc": "docs/plugin-api.md",
+          "must": "manifest.json",
+          "doc_rank": null,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 产品定位"
+        },
+        {
+          "query": "我的笔记会被传到服务器上吗？",
+          "expected_doc": "docs/security-privacy.md",
+          "must": "不存在任何形式的数据上传",
+          "doc_rank": null,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 核心功能 › 双向链接"
+        },
+        {
+          "query": "打开就一片空白怎么排查？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "安全模式启动",
+          "doc_rank": 5,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "删掉的笔记多久内还能找回？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "保留 30 天",
+          "doc_rank": 2,
+          "top1": "docs/security-privacy.md",
+          "top1_head": "云雀笔记 · 安全与隐私说明 › 本地数据保护 › 索引加密"
+        },
+        {
+          "query": "最新版加了哪些功能？",
+          "expected_doc": "docs/release-notes.md",
+          "must": "2.4.0",
+          "doc_rank": null,
+          "top1": "docs/team-collaboration.md",
+          "top1_head": "云雀笔记 · 团队协作指南 › 编辑与冲突"
+        },
+        {
+          "query": "手机和电脑怎么互传笔记？",
+          "expected_doc": "docs/mobile-app.md",
+          "must": "mDNS 发现后配对",
+          "doc_rank": null,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
         }
       ]
     },
     "tfidf": {
-      "queries": 71,
+      "queries": 143,
       "doc_recall": {
-        "@1": 0.8592,
-        "@3": 0.9718,
-        "@5": 0.9859
+        "@1": 0.8112,
+        "@3": 0.9231,
+        "@5": 0.958
       },
       "passage_hit": {
-        "@1": 0.7324,
-        "@3": 0.9155,
-        "@5": 0.9437
+        "@1": 0.7063,
+        "@3": 0.8741,
+        "@5": 0.9021
       },
-      "mrr@10": 0.9136,
-      "passage_misses": 4,
-      "mean_top1_score": 0.268,
+      "mrr@10": 0.8717,
+      "passage_misses": 14,
+      "mean_top1_score": 0.249,
       "_misses": [
         {
           "query": "怎么在检索中排除某个关键词？",
@@ -119,24 +285,104 @@
           "doc_rank": null,
           "top1": "docs/product-overview.md",
           "top1_head": "云雀笔记 · 产品概述 › 核心功能 › 版本历史"
+        },
+        {
+          "query": "这个软件适合哪些人使用？",
+          "expected_doc": "docs/product-overview.md",
+          "must": "咨询顾问",
+          "doc_rank": 4,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 导出支持哪些格式？"
+        },
+        {
+          "query": "换电脑了怎么把旧笔记带过来？",
+          "expected_doc": "docs/faq.md",
+          "must": "Markdown 文件夹",
+          "doc_rank": 1,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "两台电脑同时改了同一篇会怎样？",
+          "expected_doc": "docs/sync-guide.md",
+          "must": "保留双方版本",
+          "doc_rank": 4,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 支持多设备同步吗？"
+        },
+        {
+          "query": "只想在标题里找某个词，怎么搜？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "title:",
+          "doc_rank": 5,
+          "top1": "docs/markdown-guide.md",
+          "top1_head": "云雀笔记 · Markdown 语法支持 › 双向链接与标签"
+        },
+        {
+          "query": "自己写的小工具怎么装进去？",
+          "expected_doc": "docs/plugin-api.md",
+          "must": "manifest.json",
+          "doc_rank": null,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 产品定位"
+        },
+        {
+          "query": "我的笔记会被传到服务器上吗？",
+          "expected_doc": "docs/security-privacy.md",
+          "must": "不存在任何形式的数据上传",
+          "doc_rank": null,
+          "top1": "docs/team-collaboration.md",
+          "top1_head": "云雀笔记 · 团队协作指南 › 私有化部署"
+        },
+        {
+          "query": "打开就一片空白怎么排查？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "安全模式启动",
+          "doc_rank": null,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "删掉的笔记多久内还能找回？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "保留 30 天",
+          "doc_rank": 2,
+          "top1": "docs/security-privacy.md",
+          "top1_head": "云雀笔记 · 安全与隐私说明 › 本地数据保护 › 索引加密"
+        },
+        {
+          "query": "最新版加了哪些功能？",
+          "expected_doc": "docs/release-notes.md",
+          "must": "2.4.0",
+          "doc_rank": null,
+          "top1": "docs/team-collaboration.md",
+          "top1_head": "云雀笔记 · 团队协作指南 › 编辑与冲突"
+        },
+        {
+          "query": "手机和电脑怎么互传笔记？",
+          "expected_doc": "docs/mobile-app.md",
+          "must": "mDNS 发现后配对",
+          "doc_rank": null,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
         }
       ]
     },
     "keyword": {
-      "queries": 71,
+      "queries": 143,
       "doc_recall": {
-        "@1": 0.7042,
-        "@3": 0.9718,
-        "@5": 0.9859
+        "@1": 0.7133,
+        "@3": 0.9091,
+        "@5": 0.9441
       },
       "passage_hit": {
-        "@1": 0.6479,
-        "@3": 0.9296,
-        "@5": 0.9577
+        "@1": 0.6573,
+        "@3": 0.8671,
+        "@5": 0.9091
       },
-      "mrr@10": 0.8322,
-      "passage_misses": 3,
-      "mean_top1_score": 5.38,
+      "mrr@10": 0.8103,
+      "passage_misses": 13,
+      "mean_top1_score": 5.021,
       "_misses": [
         {
           "query": "知识库默认存放在哪个目录？",
@@ -161,76 +407,178 @@
           "doc_rank": 2,
           "top1": "docs/faq.md",
           "top1_head": "云雀笔记 · 常见问题 › 数据存储在哪里？"
+        },
+        {
+          "query": "这个软件适合哪些人使用？",
+          "expected_doc": "docs/product-overview.md",
+          "must": "咨询顾问",
+          "doc_rank": 3,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 导出支持哪些格式？"
+        },
+        {
+          "query": "两台电脑同时改了同一篇会怎样？",
+          "expected_doc": "docs/sync-guide.md",
+          "must": "保留双方版本",
+          "doc_rank": 2,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 支持多设备同步吗？"
+        },
+        {
+          "query": "只想在标题里找某个词，怎么搜？",
+          "expected_doc": "docs/search-syntax.md",
+          "must": "title:",
+          "doc_rank": null,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 如何导入已有笔记？"
+        },
+        {
+          "query": "自己写的小工具怎么装进去？",
+          "expected_doc": "docs/plugin-api.md",
+          "must": "manifest.json",
+          "doc_rank": 5,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 产品定位"
+        },
+        {
+          "query": "我的笔记会被传到服务器上吗？",
+          "expected_doc": "docs/security-privacy.md",
+          "must": "不存在任何形式的数据上传",
+          "doc_rank": null,
+          "top1": "docs/product-overview.md",
+          "top1_head": "云雀笔记 · 产品概述 › 核心功能 › 双向链接"
+        },
+        {
+          "query": "打开就一片空白怎么排查？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "安全模式启动",
+          "doc_rank": null,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "删掉的笔记多久内还能找回？",
+          "expected_doc": "docs/troubleshooting.md",
+          "must": "保留 30 天",
+          "doc_rank": null,
+          "top1": "docs/markdown-guide.md",
+          "top1_head": "云雀笔记 · Markdown 语法支持 › 双向链接与标签"
+        },
+        {
+          "query": "最新版加了哪些功能？",
+          "expected_doc": "docs/release-notes.md",
+          "must": "2.4.0",
+          "doc_rank": null,
+          "top1": "docs/team-collaboration.md",
+          "top1_head": "云雀笔记 · 团队协作指南 › 编辑与冲突"
+        },
+        {
+          "query": "手机和电脑怎么互传笔记？",
+          "expected_doc": "docs/mobile-app.md",
+          "must": "mDNS 发现后配对",
+          "doc_rank": null,
+          "top1": "docs/faq.md",
+          "top1_head": "云雀笔记 · 常见问题 › 检索不到我确定存在的内容怎么办？"
+        },
+        {
+          "query": "团队里谁能删掉整个知识库？",
+          "expected_doc": "docs/team-collaboration.md",
+          "must": "可管理",
+          "doc_rank": null,
+          "top1": "docs/pricing.md",
+          "top1_head": "云雀笔记 · 定价与套餐 › 团队版包含什么？"
         }
       ]
+    }
+  },
+  "tiers": {
+    "basic": {
+      "queries": 71,
+      "doc_recall@1": 0.8873,
+      "passage_hit@1": 0.8028,
+      "passage_hit@5": 0.9859,
+      "mrr@10": 0.9329,
+      "false_refusal_rate": 0.0,
+      "by_method": {
+        "full": 0.8028,
+        "bm25_plain": 0.7606,
+        "tfidf": 0.7324,
+        "keyword": 0.6479
+      }
+    },
+    "paraphrase": {
+      "queries": 24,
+      "doc_recall@1": 0.5,
+      "passage_hit@1": 0.3333,
+      "passage_hit@5": 0.5833,
+      "mrr@10": 0.6229,
+      "false_refusal_rate": 0.5833,
+      "by_method": {
+        "full": 0.3333,
+        "bm25_plain": 0.3333,
+        "tfidf": 0.2917,
+        "keyword": 0.2917
+      }
+    },
+    "detail": {
+      "queries": 24,
+      "doc_recall@1": 0.9167,
+      "passage_hit@1": 0.9167,
+      "passage_hit@5": 1.0,
+      "mrr@10": 0.9458,
+      "false_refusal_rate": 0.0833,
+      "by_method": {
+        "full": 0.9167,
+        "bm25_plain": 0.9167,
+        "tfidf": 0.8333,
+        "keyword": 0.9167
+      }
+    },
+    "confusable": {
+      "queries": 24,
+      "doc_recall@1": 0.9583,
+      "passage_hit@1": 0.9583,
+      "passage_hit@5": 1.0,
+      "mrr@10": 0.9792,
+      "false_refusal_rate": 0.0417,
+      "by_method": {
+        "full": 0.9583,
+        "bm25_plain": 1.0,
+        "tfidf": 0.9167,
+        "keyword": 0.7917
+      }
     }
   },
   "refusal": {
     "queries_out_of_domain": 7,
     "refused": 7,
     "refusal_accuracy": 1.0,
-    "queries_in_domain": 71,
-    "falsely_refused": 0,
-    "false_refusal_rate": 0.0,
-    "balanced_accuracy": 1.0
+    "queries_in_domain": 143,
+    "falsely_refused": 16,
+    "false_refusal_rate": 0.1119,
+    "balanced_accuracy": 0.9441
+  },
+  "refusal_production": {
+    "queries_out_of_domain": 7,
+    "refused": 7,
+    "refusal_accuracy": 1.0,
+    "queries_in_domain": 143,
+    "falsely_refused": 17,
+    "false_refusal_rate": 0.1189,
+    "balanced_accuracy": 0.9406
   },
   "refusal_calibration": {
     "best": {
-      "vocab_cov": 0.32,
-      "idf_cov": 0.18,
-      "norm_score": 0.0,
+      "vocab_cov": 0.25,
+      "idf_cov": 0.12,
+      "norm_score": 0.3,
       "refusal_accuracy": 1.0,
-      "false_refusal_rate": 0.0,
-      "balanced_accuracy": 1.0,
-      "robustness_margin": 0.0091,
-      "tied_optima": 84
+      "false_refusal_rate": 0.1119,
+      "balanced_accuracy": 0.9441,
+      "robustness_margin": 0.0005,
+      "tied_optima": 18
     },
     "pareto": [
-      {
-        "vocab_cov": 0.32,
-        "idf_cov": 0.2,
-        "norm_score": 0.3,
-        "refusal_accuracy": 1.0,
-        "false_refusal_rate": 0.0,
-        "balanced_accuracy": 1.0,
-        "robustness_margin": 0.0076
-      },
-      {
-        "vocab_cov": 0.32,
-        "idf_cov": 0.15,
-        "norm_score": 0.25,
-        "refusal_accuracy": 0.8571,
-        "false_refusal_rate": 0.0,
-        "balanced_accuracy": 0.9286,
-        "robustness_margin": 0.0025
-      },
-      {
-        "vocab_cov": 0.2,
-        "idf_cov": 0.1,
-        "norm_score": 0.0,
-        "refusal_accuracy": 0.7143,
-        "false_refusal_rate": 0.0,
-        "balanced_accuracy": 0.8571,
-        "robustness_margin": 0.0
-      },
-      {
-        "vocab_cov": 0.0,
-        "idf_cov": 0.1,
-        "norm_score": 0.0,
-        "refusal_accuracy": 0.5714,
-        "false_refusal_rate": 0.0,
-        "balanced_accuracy": 0.7857,
-        "robustness_margin": 0.0
-      },
-      {
-        "vocab_cov": 0.0,
-        "idf_cov": 0.0,
-        "norm_score": 0.15,
-        "refusal_accuracy": 0.2857,
-        "false_refusal_rate": 0.0,
-        "balanced_accuracy": 0.6429,
-        "robustness_margin": 0.007
-      },
       {
         "vocab_cov": 0.0,
         "idf_cov": 0.0,
@@ -241,78 +589,123 @@
         "robustness_margin": 0.0255
       },
       {
-        "vocab_cov": 0.4,
-        "idf_cov": 0.2,
-        "norm_score": 0.3,
-        "refusal_accuracy": 1.0,
-        "false_refusal_rate": 0.0141,
-        "balanced_accuracy": 0.993,
-        "robustness_margin": 0.0076
+        "vocab_cov": 0.2,
+        "idf_cov": 0.0,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.7143,
+        "false_refusal_rate": 0.007,
+        "balanced_accuracy": 0.8536,
+        "robustness_margin": 0.0
       },
       {
-        "vocab_cov": 0.4,
-        "idf_cov": 0.15,
-        "norm_score": 0.25,
+        "vocab_cov": 0.25,
+        "idf_cov": 0.0,
+        "norm_score": 0.0,
         "refusal_accuracy": 0.8571,
-        "false_refusal_rate": 0.0141,
-        "balanced_accuracy": 0.9215,
-        "robustness_margin": 0.0025
+        "false_refusal_rate": 0.021,
+        "balanced_accuracy": 0.9181,
+        "robustness_margin": 0.0246
       },
       {
-        "vocab_cov": 0.45,
-        "idf_cov": 0.2,
-        "norm_score": 0.3,
-        "refusal_accuracy": 1.0,
-        "false_refusal_rate": 0.0282,
-        "balanced_accuracy": 0.9859,
-        "robustness_margin": 0.0049
+        "vocab_cov": 0.0,
+        "idf_cov": 0.1,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.5714,
+        "false_refusal_rate": 0.028,
+        "balanced_accuracy": 0.7717,
+        "robustness_margin": 0.0
       },
       {
-        "vocab_cov": 0.45,
-        "idf_cov": 0.15,
-        "norm_score": 0.25,
-        "refusal_accuracy": 0.8571,
-        "false_refusal_rate": 0.0282,
-        "balanced_accuracy": 0.9145,
-        "robustness_margin": 0.0025
-      },
-      {
-        "vocab_cov": 0.4,
-        "idf_cov": 0.2,
-        "norm_score": 0.35,
-        "refusal_accuracy": 1.0,
-        "false_refusal_rate": 0.0423,
-        "balanced_accuracy": 0.9789,
+        "vocab_cov": 0.0,
+        "idf_cov": 0.0,
+        "norm_score": 0.15,
+        "refusal_accuracy": 0.2857,
+        "false_refusal_rate": 0.028,
+        "balanced_accuracy": 0.6289,
         "robustness_margin": 0.0005
       },
       {
-        "vocab_cov": 0.45,
-        "idf_cov": 0.2,
-        "norm_score": 0.35,
-        "refusal_accuracy": 1.0,
-        "false_refusal_rate": 0.0563,
-        "balanced_accuracy": 0.9718,
-        "robustness_margin": 0.0005
+        "vocab_cov": 0.2,
+        "idf_cov": 0.0,
+        "norm_score": 0.15,
+        "refusal_accuracy": 0.8571,
+        "false_refusal_rate": 0.035,
+        "balanced_accuracy": 0.9111,
+        "robustness_margin": 0.0
+      },
+      {
+        "vocab_cov": 0.2,
+        "idf_cov": 0.1,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.7143,
+        "false_refusal_rate": 0.035,
+        "balanced_accuracy": 0.8397,
+        "robustness_margin": 0.0
+      },
+      {
+        "vocab_cov": 0.0,
+        "idf_cov": 0.0,
+        "norm_score": 0.2,
+        "refusal_accuracy": 0.5714,
+        "false_refusal_rate": 0.035,
+        "balanced_accuracy": 0.7682,
+        "robustness_margin": 0.0029
+      },
+      {
+        "vocab_cov": 0.25,
+        "idf_cov": 0.12,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.8571,
+        "false_refusal_rate": 0.042,
+        "balanced_accuracy": 0.9076,
+        "robustness_margin": 0.0051
+      },
+      {
+        "vocab_cov": 0.0,
+        "idf_cov": 0.1,
+        "norm_score": 0.15,
+        "refusal_accuracy": 0.7143,
+        "false_refusal_rate": 0.042,
+        "balanced_accuracy": 0.8362,
+        "robustness_margin": 0.0
+      },
+      {
+        "vocab_cov": 0.3,
+        "idf_cov": 0.0,
+        "norm_score": 0.0,
+        "refusal_accuracy": 0.8571,
+        "false_refusal_rate": 0.049,
+        "balanced_accuracy": 0.9041,
+        "robustness_margin": 0.0
+      },
+      {
+        "vocab_cov": 0.0,
+        "idf_cov": 0.1,
+        "norm_score": 0.2,
+        "refusal_accuracy": 0.7143,
+        "false_refusal_rate": 0.049,
+        "balanced_accuracy": 0.8327,
+        "robustness_margin": 0.0
       }
     ],
     "in_domain_features": {
       "vocab_cov": {
-        "mean": 0.6585,
-        "p10": 0.4615,
-        "p50": 0.6667,
-        "p90": 0.8125
+        "mean": 0.5917,
+        "p10": 0.375,
+        "p50": 0.6,
+        "p90": 0.7857
       },
       "idf_cov": {
-        "mean": 0.4374,
-        "p10": 0.2477,
-        "p50": 0.4103,
-        "p90": 0.6655
+        "mean": 0.3783,
+        "p10": 0.1767,
+        "p50": 0.3603,
+        "p90": 0.6112
       },
       "norm_score": {
-        "mean": 0.9538,
-        "p10": 0.4677,
-        "p50": 0.7548,
-        "p90": 1.7829
+        "mean": 0.7811,
+        "p10": 0.295,
+        "p50": 0.6689,
+        "p90": 1.2819
       }
     },
     "out_of_domain_features": {
@@ -343,12 +736,12 @@
     "mean_top1_score": 8.272
   },
   "latency": {
-    "samples": 390,
-    "mean_ms": 0.195,
-    "p50_ms": 0.148,
-    "p95_ms": 0.537,
-    "p99_ms": 0.725,
-    "max_ms": 0.854
+    "samples": 750,
+    "mean_ms": 0.089,
+    "p50_ms": 0.074,
+    "p95_ms": 0.201,
+    "p99_ms": 0.317,
+    "max_ms": 0.375
   },
   "index": {
     "index_bytes": 232644,
@@ -358,8 +751,8 @@
     "load_heap_peak_kb": 2701.4
   },
   "timing": {
-    "parse_s": 0.005,
-    "index_build_s": 0.015,
-    "total_build_s": 0.02
+    "parse_s": 0.0036,
+    "index_build_s": 0.0083,
+    "total_build_s": 0.012
   }
 }

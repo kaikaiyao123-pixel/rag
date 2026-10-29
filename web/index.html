@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>本地知识库问答</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #F6F7F9;
+    color: #1C1C1C;
+    font: 15px/1.65 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px 24px; background: #FFF; border-bottom: 1px solid #E3E7EE;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: .2px; }
+  .mark {
+    width: 9px; height: 9px; border-radius: 50%; background: #2F5FD8;
+    box-shadow: 0 0 0 4px rgba(47, 95, 216, .12); flex: none;
+  }
+  .stat { font-size: 12.5px; color: #8A93A0; font-variant-numeric: tabular-nums; text-align: right; }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 26px 24px 64px; }
+  .card { background: #FFF; border: 1px solid #E3E7EE; border-radius: 12px; padding: 20px 22px; }
+  .card + .card { margin-top: 18px; }
+
+  .lbl { display: block; font-size: 12.5px; font-weight: 600; color: #5B6472; letter-spacing: .4px; margin-bottom: 8px; }
+  textarea {
+    width: 100%; resize: vertical; min-height: 78px;
+    padding: 12px 14px; border: 1px solid #D8DEE7; border-radius: 9px;
+    font: inherit; color: inherit; background: #FCFDFE; outline: none;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  textarea:focus { border-color: #2F5FD8; box-shadow: 0 0 0 3px rgba(47, 95, 216, .12); background: #FFF; }
+
+  .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+  button { font: inherit; cursor: pointer; }
+  .primary {
+    padding: 9px 22px; border: 0; border-radius: 8px;
+    background: #2F5FD8; color: #FFF; font-weight: 600;
+  }
+  .primary:hover:not(:disabled) { background: #2850BA; }
+  .primary:disabled { opacity: .55; cursor: default; }
+  .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: #5B6472; }
+  select {
+    font: inherit; font-size: 13.5px; padding: 4px 6px;
+    border: 1px solid #D8DEE7; border-radius: 6px; background: #FFF; color: inherit;
+  }
+  .hint { font-size: 12.5px; color: #A3ABB6; margin-left: auto; }
+
+  .samples {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 16px; padding-top: 14px; border-top: 1px dashed #E9EDF3;
+  }
+  .samples-lbl { font-size: 12.5px; color: #A3ABB6; }
+  .chip {
+    padding: 5px 11px; border: 1px solid #E3E7EE; border-radius: 999px;
+    background: #FBFCFE; color: #45505F; font-size: 13px;
+  }
+  .chip:hover { border-color: #B9C7E8; background: #F3F6FD; color: #2F5FD8; }
+
+  .result-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .badge { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .badge.llm { background: #EAF0FE; color: #2F5FD8; }
+  .badge.off { background: #E8F6F4; color: #0F7E73; }
+  .badge.abstain { background: #FDF0E6; color: #B4620F; }
+  .badge.bad { background: #FBEAE8; color: #B03325; }
+  .elapsed { font-size: 12.5px; color: #A3ABB6; font-variant-numeric: tabular-nums; }
+
+  .answer { font-size: 15.5px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+  .note { margin-top: 10px; font-size: 12.8px; color: #8A93A0; line-height: 1.6; white-space: pre-wrap; }
+
+  .sec { margin-top: 22px; padding-top: 18px; border-top: 1px solid #EDF1F6; }
+  .sec h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: #5B6472; letter-spacing: .4px; }
+  .sources { margin: 0; padding-left: 20px; }
+  .sources li { margin: 7px 0; font-size: 13.5px; color: #45505F; }
+  .sources .sc {
+    color: #A3ABB6; font-size: 12.5px;
+    font-family: ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums;
+  }
+
+  .debug { margin-top: 22px; border-top: 1px solid #EDF1F6; padding-top: 16px; }
+  .debug summary { cursor: pointer; font-size: 13px; font-weight: 600; color: #5B6472; letter-spacing: .3px; }
+  .debug summary:hover { color: #2F5FD8; }
+  .debug-body { margin-top: 14px; }
+  .debug h3 { margin: 16px 0 8px; font-size: 12.5px; font-weight: 600; color: #8A93A0; letter-spacing: .4px; }
+  .debug h3:first-child { margin-top: 0; }
+
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th, .tbl td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #EDF1F6; }
+  .tbl th { font-weight: 600; color: #8A93A0; font-size: 12px; }
+  .tbl td.num { font-family: ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .ok { color: #0F7E73; }
+  .no { color: #B03325; }
+  .muted { color: #A3ABB6; }
+
+  .hit { border: 1px solid #EDF1F6; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; background: #FCFDFE; }
+  .hit-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.8px; color: #5B6472; }
+  .hit-n { font-weight: 700; color: #2F5FD8; }
+  .hit-doc { color: #45505F; }
+  .hit-score {
+    font-family: ui-monospace, Consolas, monospace;
+    font-variant-numeric: tabular-nums; color: #2F5FD8;
+  }
+  .bar-track { flex: 1 1 120px; height: 4px; background: #EDF1F6; border-radius: 2px; overflow: hidden; min-width: 60px; }
+  .bar-fill { height: 100%; background: #2F5FD8; border-radius: 2px; }
+  .terms { margin: 7px 0 0; font-size: 12px; color: #8A93A0; }
+  .terms code {
+    background: #F1F4F9; padding: 1px 5px; border-radius: 4px; margin-right: 4px;
+    font-size: 11.5px; color: #45505F;
+  }
+  .chunk {
+    margin: 8px 0 0; padding: 9px 11px; background: #F7F9FC; border-radius: 6px;
+    font-family: inherit; font-size: 12.3px; line-height: 1.7; color: #45505F;
+    white-space: pre-wrap; word-break: break-word;
+    max-height: 190px; overflow: auto;
+  }
+
+  .empty { margin-top: 22px; text-align: center; font-size: 13px; color: #A3ABB6; }
+  .foot { margin-top: 34px; text-align: center; font-size: 12px; color: #B6BCC6; line-height: 1.9; }
+
+  /* ---------------------------------------------------------- 模型设置 */
+  .bar-right { display: flex; align-items: center; gap: 14px; }
+  .ghost {
+    padding: 6px 13px; border: 1px solid #D8DEE7; border-radius: 7px;
+    background: #FFF; color: #45505F; font-size: 13px; white-space: nowrap;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  .ghost:hover:not(:disabled) { border-color: #B9C7E8; color: #2F5FD8; background: #F7F9FE; }
+  .ghost:disabled { opacity: .5; cursor: default; }
+  .ghost.on { border-color: #BFDCCF; color: #0F7E73; background: #F4FAF7; }
+  .ghost.on:hover:not(:disabled) { border-color: #9CCBB8; color: #0B665D; background: #EDF8F4; }
+  .ghost.danger:hover:not(:disabled) { border-color: #E8B4AC; color: #B03325; background: #FDF3F1; }
+
+  .modal {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal[hidden] { display: none; }
+  .mask { position: absolute; inset: 0; background: rgba(20, 26, 38, .38); }
+  .dialog {
+    position: relative; width: 100%; max-width: 470px; background: #FFF;
+    border-radius: 14px; padding: 24px 26px;
+    box-shadow: 0 18px 48px rgba(20, 26, 38, .18);
+    max-height: 90vh; overflow: auto;
+  }
+  .dialog h2 { margin: 0 0 6px; font-size: 16px; font-weight: 650; }
+  .dialog .sub { margin: 0 0 18px; font-size: 12.5px; color: #8A93A0; line-height: 1.65; }
+  .fgroup { margin-bottom: 14px; }
+  .field {
+    width: 100%; padding: 9px 12px; border: 1px solid #D8DEE7; border-radius: 8px;
+    font: inherit; font-size: 13.5px; color: inherit; background: #FCFDFE; outline: none;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  .field:focus { border-color: #2F5FD8; box-shadow: 0 0 0 3px rgba(47, 95, 216, .12); background: #FFF; }
+  .frow { display: flex; align-items: center; gap: 8px; }
+  .frow .field { flex: 1 1 auto; min-width: 0; }
+  .acts { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 6px; }
+  .acts .spacer { flex: 1 1 auto; }
+  .status { margin-top: 14px; font-size: 12.5px; line-height: 1.65; min-height: 18px; white-space: pre-wrap; word-break: break-word; }
+  .status.info { color: #8A93A0; }
+  .status.ok { color: #0F7E73; }
+  .status.bad { color: #B03325; }
+
+  @media (max-width: 620px) {
+    .wrap { padding: 18px 14px 48px; }
+    .bar { padding: 12px 16px; }
+    .stat { display: none; }
+    .hint { display: none; }
+    .card { padding: 16px; }
+    .dialog { padding: 20px 18px; }
+    .acts .spacer { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand"><span class="mark"></span><span>本地知识库问答</span></div>
+  <div class="bar-right">
+    <div class="stat" id="stat">连接中…</div>
+    <button id="cfgbtn" class="ghost">模型设置 · 离线</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card ask">
+    <label class="lbl" for="q">提问</label>
+    <textarea id="q" rows="3" placeholder="例如：如何导入已有笔记？"></textarea>
+    <div class="controls">
+      <button id="send" class="primary">提问</button>
+      <label class="chk"><input type="checkbox" id="nollm"> 强制离线抽取</label>
+      <label class="chk">召回
+        <select id="topk">
+          <option>3</option>
+          <option selected>5</option>
+          <option>8</option>
+          <option>10</option>
+        </select>
+      </label>
+      <span class="hint">Enter 发送 · Shift+Enter 换行</span>
+    </div>
+    <div class="samples">
+      <span class="samples-lbl">示例</span>
+      <button class="chip" data-q="如何导入已有笔记？">如何导入已有笔记？</button>
+      <button class="chip" data-q="导出支持哪些格式">导出支持哪些格式</button>
+      <button class="chip" data-q="免费版可以登录几台设备">免费版可以登录几台设备</button>
+      <button class="chip" data-q="误删的笔记怎么恢复">误删的笔记怎么恢复</button>
+    </div>
+  </section>
+
+  <section class="card" id="result" hidden>
+    <div class="result-head">
+      <span class="badge" id="mode">—</span>
+      <span class="elapsed" id="elapsed"></span>
+    </div>
+
+    <div class="answer" id="answer"></div>
+    <div class="note" id="note"></div>
+
+    <div class="sec">
+      <h2>引用来源</h2>
+      <ol class="sources" id="sources"></ol>
+    </div>
+
+    <details class="debug" id="debug">
+      <summary>调试面板（拒答特征 · 召回得分 · 命中词项）</summary>
+      <div class="debug-body">
+        <h3>拒答判定</h3>
+        <table class="tbl" id="feats"></table>
+        <h3>召回片段</h3>
+        <div id="hits"></div>
+      </div>
+    </details>
+  </section>
+
+  <div class="empty" id="empty">提问后，答案、引用来源与召回细节会显示在这里。</div>
+
+  <div class="foot">
+    零第三方依赖 · 检索全程离线 · 服务仅绑定本机
+  </div>
+
+</main>
+
+<div class="modal" id="cfgmodal" hidden>
+  <div class="mask" id="cfgmask"></div>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cfgtitle">
+    <h2 id="cfgtitle">模型设置</h2>
+    <p class="sub">密钥只保存在本进程内存里，不写磁盘、不回显、不记日志；服务重启后需重新填写。<br>「测试连接」会先保存当前填写的内容，再发一次最小请求。</p>
+
+    <div class="fgroup">
+      <label class="lbl" for="apibase">服务地址</label>
+      <input class="field" id="apibase" type="text" spellcheck="false"
+             placeholder="https://api.deepseek.com/v1">
+    </div>
+
+    <div class="fgroup">
+      <label class="lbl" for="model">模型名</label>
+      <input class="field" id="model" type="text" spellcheck="false"
+             placeholder="deepseek-chat">
+    </div>
+
+    <div class="fgroup">
+      <label class="lbl" for="apikey">API Key</label>
+      <div class="frow">
+        <input class="field" id="apikey" type="password" autocomplete="off"
+               spellcheck="false" placeholder="粘贴 API Key（如 sk-...）">
+        <button class="ghost" id="eye">显示</button>
+      </div>
+    </div>
+
+    <div class="acts">
+      <button class="primary" id="cfgsave">保存</button>
+      <button class="ghost" id="cfgtest">测试连接</button>
+      <button class="ghost danger" id="cfgclear">清除密钥</button>
+      <span class="spacer"></span>
+      <button class="ghost" id="cfgclose">关闭</button>
+    </div>
+
+    <div class="status info" id="cfgstatus"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var meta = null;
+  var busy = false;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) { n.className = cls; }
+    if (text !== undefined && text !== null) { n.textContent = String(text); }
+    return n;
+  }
+
+  function loadMeta() {
+    fetch('/api/meta').then(function (r) {
+      if (!r.ok) { throw new Error('HTTP ' + r.status); }
+      return r.json();
+    }).then(function (m) {
+      meta = m;
+      var i = m.index;
+      var model = m.llm.available ? m.llm.model : '离线抽取';
+      $('stat').textContent = i.documents + ' 篇 · ' + i.chunks + ' 片段 · ' +
+        i.terms + ' 词项 · ' + model;
+      paintLlm(m.llm);
+    }).catch(function (e) {
+      $('stat').textContent = '无法连接服务：' + e.message;
+    });
+  }
+
+  function paintLlm(st) {
+    if (!st) { return; }
+    $('cfgbtn').textContent = st.available ? '模型设置 · 在线' : '模型设置 · 离线';
+    $('cfgbtn').classList.toggle('on', !!st.available);
+    $('apikey').placeholder = st.key_set
+      ? '已保存 ' + st.key_masked + '，留空则不修改'
+      : '粘贴 API Key（如 sk-...）';
+  }
+
+  function setMode(kind, text) {
+    var m = $('mode');
+    m.className = 'badge ' + kind;
+    m.textContent = text;
+  }
+
+  function renderFeats(d) {
+    var tb = $('feats');
+    tb.textContent = '';
+
+    var thead = el('thead');
+    var hr = el('tr');
+    ['特征', '实测值', '阈值', '判定'].forEach(function (t) {
+      hr.appendChild(el('th', null, t));
+    });
+    thead.appendChild(hr);
+    tb.appendChild(thead);
+
+    var tbody = el('tbody');
+    var f = d.debug.features;
+    var th = d.debug.thresholds;
+
+    [['vocab_cov', f.vocab_cov, th.vocab_cov],
+     ['idf_cov', f.idf_cov, th.idf_cov],
+     ['norm_score', f.norm_score, th.norm_score]].forEach(function (row) {
+      var tr = el('tr');
+      tr.appendChild(el('td', null, row[0]));
+      tr.appendChild(el('td', 'num', Number(row[1]).toFixed(4)));
+
+      var disabled = row[2] === 0;
+      var tdTh = el('td', 'num' + (disabled ? ' muted' : ''),
+                    disabled ? '0（未启用）' : String(row[2]));
+      tr.appendChild(tdTh);
+
+      var pass = disabled || row[1] >= row[2];
+      tr.appendChild(el('td', pass ? 'ok' : 'no', pass ? '通过' : '未通过'));
+      tbody.appendChild(tr);
+    });
+
+    [['查询词项数', f.terms],
+     ['查询总权重', f.total_idf]].forEach(function (row) {
+      var tr = el('tr');
+      tr.appendChild(el('td', null, row[0]));
+      tr.appendChild(el('td', 'num', String(row[1])));
+      tr.appendChild(el('td', 'num muted', '—'));
+      tr.appendChild(el('td', 'muted', '—'));
+      tbody.appendChild(tr);
+    });
+
+    tb.appendChild(tbody);
+  }
+
+  function renderHits(d) {
+    var box = $('hits');
+    box.textContent = '';
+    var maxScore = d.hits.length ? d.hits[0].score : 1;
+
+    d.hits.forEach(function (h) {
+      var wrap = el('div', 'hit');
+
+      var head = el('div', 'hit-head');
+      head.appendChild(el('span', 'hit-n', '#' + h.n));
+      head.appendChild(el('span', 'hit-doc',
+        h.heading ? h.doc + ' › ' + h.heading : h.doc));
+      head.appendChild(el('span', 'muted', '第 ' + h.line + ' 行'));
+      head.appendChild(el('span', 'hit-score', Number(h.score).toFixed(4)));
+
+      var track = el('div', 'bar-track');
+      var fill = el('div', 'bar-fill');
+      fill.style.width = Math.max(2, Math.round(h.score / (maxScore || 1) * 100)) + '%';
+      track.appendChild(fill);
+      head.appendChild(track);
+      wrap.appendChild(head);
+
+      if (h.matched_terms && h.matched_terms.length) {
+        var t = el('div', 'terms');
+        t.appendChild(el('span', null, '命中词项 '));
+        h.matched_terms.forEach(function (x) { t.appendChild(el('code', null, x)); });
+        wrap.appendChild(t);
+      }
+
+      wrap.appendChild(el('pre', 'chunk', h.text));
+      box.appendChild(wrap);
+    });
+  }
+
+  function render(d) {
+    $('result').hidden = false;
+    $('empty').hidden = true;
+    $('debug').hidden = false;
+
+    if (d.abstained) { setMode('abstain', '拒答'); }
+    else if (d.used_llm) { setMode('llm', '大模型'); }
+    else { setMode('off', '离线抽取'); }
+
+    $('elapsed').textContent = d.elapsed_ms + ' ms';
+    $('answer').textContent = d.answer;
+
+    $('note').textContent = d.note || '';
+    $('note').hidden = !d.note;
+
+    var ol = $('sources');
+    ol.textContent = '';
+    if (!d.sources.length) {
+      ol.appendChild(el('li', 'muted', '无引用来源'));
+    }
+    d.sources.forEach(function (s) {
+      var li = el('li');
+      li.appendChild(el('span', null, s.doc));
+      if (s.heading) { li.appendChild(el('span', 'muted', ' › ' + s.heading)); }
+      li.appendChild(el('span', 'sc', '　第 ' + s.line + ' 行 · ' + Number(s.score).toFixed(4)));
+      ol.appendChild(li);
+    });
+
+    renderFeats(d);
+    renderHits(d);
+  }
+
+  function showError(msg) {
+    $('result').hidden = false;
+    $('empty').hidden = true;
+    $('debug').hidden = true;
+    setMode('bad', '出错');
+    $('elapsed').textContent = '';
+    $('answer').textContent = msg;
+    $('note').textContent = '';
+    $('note').hidden = true;
+    $('sources').textContent = '';
+    $('feats').textContent = '';
+    $('hits').textContent = '';
+  }
+
+  function ask() {
+    if (busy) { return; }
+    var q = $('q').value.trim();
+    if (!q) { $('q').focus(); return; }
+
+    busy = true;
+    $('send').disabled = true;
+    $('send').textContent = '查询中…';
+
+    fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: q,
+        top_k: Number($('topk').value),
+        no_llm: $('nollm').checked
+      })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+    }).then(function (res) {
+      if (!res.ok) {
+        throw new Error(res.data && res.data.error ? res.data.error : '请求失败');
+      }
+      render(res.data);
+      $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }).catch(function (e) {
+      showError(e.message || String(e));
+    }).then(function () {
+      busy = false;
+      $('send').disabled = false;
+      $('send').textContent = '提问';
+    });
+  }
+
+  $('send').addEventListener('click', ask);
+
+  $('q').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      ask();
+    }
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (c) {
+    c.addEventListener('click', function () {
+      $('q').value = c.getAttribute('data-q');
+      ask();
+    });
+  });
+
+  // ---------------------------------------------------------------- 模型设置
+  function setStatus(kind, text) {
+    var s = $('cfgstatus');
+    s.className = 'status ' + kind;
+    s.textContent = text || '';
+  }
+
+  function postJson(url, body) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+    });
+  }
+
+  function openConfig() {
+    $('cfgmodal').hidden = false;
+    $('apikey').value = '';
+    setStatus('info', '');
+    fetch('/api/llm').then(function (r) {
+      if (!r.ok) { throw new Error('HTTP ' + r.status); }
+      return r.json();
+    }).then(function (st) {
+      $('apibase').value = st.api_base || '';
+      $('model').value = st.model || '';
+      paintLlm(st);
+      if (st.key_set) { $('cfgtest').focus(); } else { $('apikey').focus(); }
+    }).catch(function (e) {
+      setStatus('bad', '读取配置失败：' + e.message);
+    });
+  }
+
+  function closeConfig() {
+    $('cfgmodal').hidden = true;
+    $('apikey').value = '';
+    $('apikey').type = 'password';
+    $('eye').textContent = '显示';
+  }
+
+  function saveConfig(silent) {
+    var body = {
+      api_base: $('apibase').value.trim(),
+      model: $('model').value.trim()
+    };
+    var k = $('apikey').value.trim();
+    if (k) { body.api_key = k; }
+
+    $('cfgsave').disabled = true;
+    if (!silent) { setStatus('info', '保存中…'); }
+
+    return postJson('/api/llm', body).then(function (res) {
+      if (!res.ok) {
+        throw new Error((res.data && res.data.error) || '保存失败');
+      }
+      $('apikey').value = '';
+      paintLlm(res.data.llm);
+      if (!silent) {
+        setStatus('ok', '已保存。' + (res.data.llm.key_set
+          ? '密钥已生效，提问时默认调用大模型。'
+          : '当前仍走离线抽取。'));
+      }
+      loadMeta();
+      $('cfgsave').disabled = false;
+      return res.data.llm;
+    }, function (e) {
+      $('cfgsave').disabled = false;
+      if (!silent) { setStatus('bad', e.message || String(e)); }
+      throw e;
+    });
+  }
+
+  function testConfig() {
+    $('cfgtest').disabled = true;
+    setStatus('info', '正在保存并请求模型…');
+    saveConfig(true).then(function () {
+      return postJson('/api/llm/test', {});
+    }).then(function (res) {
+      var d = res.data;
+      if (d.ok) {
+        setStatus('ok', '连接成功 · ' + d.model + ' · ' + d.latency_ms + ' ms\n返回：' +
+          (d.reply || '（空）'));
+      } else {
+        setStatus('bad', '连接失败：' + (d.error || '未知错误'));
+      }
+    }).catch(function (e) {
+      setStatus('bad', '连接失败：' + (e.message || String(e)));
+    }).then(function () {
+      $('cfgtest').disabled = false;
+    });
+  }
+
+  function clearKey() {
+    if (!window.confirm('确定清除已保存的 API Key？清除后问答会退回离线抽取。')) {
+      return;
+    }
+    $('cfgclear').disabled = true;
+    postJson('/api/llm', { clear_key: true }).then(function (res) {
+      if (!res.ok) { throw new Error((res.data && res.data.error) || '清除失败'); }
+      paintLlm(res.data.llm);
+      setStatus('ok', '密钥已清除，问答将使用离线抽取。');
+      loadMeta();
+    }).catch(function (e) {
+      setStatus('bad', e.message || String(e));
+    }).then(function () {
+      $('cfgclear').disabled = false;
+    });
+  }
+
+  $('cfgbtn').addEventListener('click', openConfig);
+  $('cfgclose').addEventListener('click', closeConfig);
+  $('cfgmask').addEventListener('click', closeConfig);
+  $('cfgsave').addEventListener('click', function () {
+    saveConfig(false).catch(function () {});
+  });
+  $('cfgtest').addEventListener('click', testConfig);
+  $('cfgclear').addEventListener('click', clearKey);
+
+  $('eye').addEventListener('click', function () {
+    var p = $('apikey');
+    var show = p.type === 'password';
+    p.type = show ? 'text' : 'password';
+    $('eye').textContent = show ? '隐藏' : '显示';
+  });
+
+  ['apibase', 'model', 'apikey'].forEach(function (id) {
+    $(id).addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveConfig(false).catch(function () {});
+      }
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !$('cfgmodal').hidden) { closeConfig(); }
+  });
+
+  loadMeta();
+
+  // 支持 /?q=... 直接发起查询：便于分享链接，也让自动化验证能截到结果态
+  var preset = new URLSearchParams(location.search).get('q');
+  if (preset) {
+    $('q').value = preset;
+    ask();
+  } else {
+    $('q').focus();
+  }
+})();
+</script>
+
+</body>
+</html>

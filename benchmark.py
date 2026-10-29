@@ -51,6 +51,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from ragcore.abstain import features as abstain_features      # noqa: E402
 from ragcore.chunker import chunk_document                    # noqa: E402
+from ragcore.cli import DEFAULT_CONFIG                        # noqa: E402
 from ragcore.generator import extractive_answer                # noqa: E402
 from ragcore.index import BM25Index                            # noqa: E402
 from ragcore.loader import discover_documents, read_text, sha1_of  # noqa: E402
@@ -65,102 +66,234 @@ MAX_PER_DOC = 3
 
 # --------------------------------------------------------------------- 标注集
 # (查询, 期望文档, 正确片段中必须出现的特征串)
-LABELED: List[Tuple[str, str, str]] = [
+#
+# 按难度分四层。整体指标会被难例稀释，分层统计才能看出方法在哪类问法上失效：
+#   basic       问法与文档用词高度重合，考察"能不能检索到"
+#   paraphrase  问法刻意避开原文用词，考察词项扩展能力（零依赖二元切分的主要短板）
+#   detail      答案埋在具体数值 / 路径 / 协议名里，考察片段级定位精度
+#   confusable  多个文档出现相近数字或概念，考察能否区分到正确文档
+LABELED_BASIC: List[Tuple[str, str, str]] = [
     # product-overview.md
-    ("产品主要面向哪些用户群体？", "docs/product-overview.md", "需要长期积累资料的研发人员"),
-    ("双向链接是怎么建立和查看的？", "docs/product-overview.md", "反向链接"),
-    ("网页剪藏提供了哪几种模式？", "docs/product-overview.md", "三种剪藏模式"),
-    ("版本历史默认保留多少个版本？", "docs/product-overview.md", "200 个版本"),
-    ("数据以什么格式存放在本地？", "docs/product-overview.md", "纯 Markdown 文件"),
-
+    ('产品主要面向哪些用户群体？', 'docs/product-overview.md', '需要长期积累资料的研发人员'),
+    ('双向链接是怎么建立和查看的？', 'docs/product-overview.md', '反向链接'),
+    ('网页剪藏提供了哪几种模式？', 'docs/product-overview.md', '三种剪藏模式'),
+    ('版本历史默认保留多少个版本？', 'docs/product-overview.md', '200 个版本'),
+    ('数据以什么格式存放在本地？', 'docs/product-overview.md', '纯 Markdown 文件'),
     # faq.md
-    ("如何导入 Obsidian 库？", "docs/faq.md", "Obsidian 仓库根目录"),
-    ("支持导入印象笔记的导出包吗？", "docs/faq.md", ".enex"),
-    ("导出支持哪些格式？", "docs/faq.md", "HTML 单文件"),
-    ("搜索不到确定存在的内容该怎么排查？", "docs/faq.md", "重建索引"),
-    ("知识库默认存放在哪个目录？", "docs/faq.md", "文档/云雀笔记/"),
-    ("移动端的功能范围有什么限制？", "docs/faq.md", "功能限于阅读、编辑和检索"),
-    ("导入时遇到同名笔记会怎么处理？", "docs/faq.md", "保留两者"),
-
+    ('如何导入 Obsidian 库？', 'docs/faq.md', 'Obsidian 仓库根目录'),
+    ('支持导入印象笔记的导出包吗？', 'docs/faq.md', '.enex'),
+    ('导出支持哪些格式？', 'docs/faq.md', 'HTML 单文件'),
+    ('搜索不到确定存在的内容该怎么排查？', 'docs/faq.md', '重建索引'),
+    ('知识库默认存放在哪个目录？', 'docs/faq.md', '文档/云雀笔记/'),
+    ('移动端的功能范围有什么限制？', 'docs/faq.md', '功能限于阅读、编辑和检索'),
+    ('导入时遇到同名笔记会怎么处理？', 'docs/faq.md', '保留两者'),
     # pricing.md
-    ("免费版可以登录几台设备？", "docs/pricing.md", "1 台"),
-    ("个人版一年多少钱？", "docs/pricing.md", "128 元"),
-    ("团队版比个人版多了哪些协作能力？", "docs/pricing.md", "共享知识库"),
-    ("学生可以免费使用吗？", "docs/pricing.md", "在校学生与教师"),
-    ("退款政策是怎样的？", "docs/pricing.md", "14 天内"),
-    ("可以开增值税专用发票吗？", "docs/pricing.md", "增值税专用"),
-    ("团队版按什么口径计费？", "docs/pricing.md", "实际活跃成员计费"),
-
+    ('免费版可以登录几台设备？', 'docs/pricing.md', '1 台'),
+    ('个人版一年多少钱？', 'docs/pricing.md', '128 元'),
+    ('团队版比个人版多了哪些协作能力？', 'docs/pricing.md', '共享知识库'),
+    ('学生可以免费使用吗？', 'docs/pricing.md', '在校学生与教师'),
+    ('退款政策是怎样的？', 'docs/pricing.md', '14 天内'),
+    ('可以开增值税专用发票吗？', 'docs/pricing.md', '增值税专用'),
+    ('团队版按什么口径计费？', 'docs/pricing.md', '实际活跃成员计费'),
     # sync-guide.md
-    ("一次同步大概产生多少流量？", "docs/sync-guide.md", "1~3 KB"),
-    ("Git 自动提交的默认间隔是多少？", "docs/sync-guide.md", "5 分钟"),
-    ("网盘同步为什么容易产生冲突？", "docs/sync-guide.md", "文件级同步"),
-    ("局域网同步使用什么加密协议？", "docs/sync-guide.md", "TLS 1.3"),
-    ("冲突副本的文件名是什么格式？", "docs/sync-guide.md", "冲突副本"),
-    ("同步一直卡在正在比对怎么处理？", "docs/sync-guide.md", "正在比对"),
-    ("同步时为什么要排除 .lark 目录？", "docs/sync-guide.md", "忽略列表"),
-
+    ('一次同步大概产生多少流量？', 'docs/sync-guide.md', '1~3 KB'),
+    ('Git 自动提交的默认间隔是多少？', 'docs/sync-guide.md', '5 分钟'),
+    ('网盘同步为什么容易产生冲突？', 'docs/sync-guide.md', '文件级同步'),
+    ('局域网同步使用什么加密协议？', 'docs/sync-guide.md', 'TLS 1.3'),
+    ('冲突副本的文件名是什么格式？', 'docs/sync-guide.md', '冲突副本'),
+    ('同步一直卡在正在比对怎么处理？', 'docs/sync-guide.md', '正在比对'),
+    ('同步时为什么要排除 .lark 目录？', 'docs/sync-guide.md', '忽略列表'),
     # search-syntax.md
-    ("怎么在检索中排除某个关键词？", "docs/search-syntax.md", "排除"),
-    ("支持正则表达式检索吗？", "docs/search-syntax.md", "正则"),
-    ("怎么按时间范围筛选笔记？", "docs/search-syntax.md", "updated:"),
-    ("智能笔记本最多能嵌套几层？", "docs/search-syntax.md", "3 层"),
-    ("一万篇笔记的索引占多少内存？", "docs/search-syntax.md", "180 MB"),
-    ("短语精确匹配怎么写？", "docs/search-syntax.md", "短语精确匹配"),
-
+    ('怎么在检索中排除某个关键词？', 'docs/search-syntax.md', '排除'),
+    ('支持正则表达式检索吗？', 'docs/search-syntax.md', '正则'),
+    ('怎么按时间范围筛选笔记？', 'docs/search-syntax.md', 'updated:'),
+    ('智能笔记本最多能嵌套几层？', 'docs/search-syntax.md', '3 层'),
+    ('一万篇笔记的索引占多少内存？', 'docs/search-syntax.md', '180 MB'),
+    ('短语精确匹配怎么写？', 'docs/search-syntax.md', '短语精确匹配'),
     # markdown-guide.md
-    ("支持 Mermaid 图表吗？", "docs/markdown-guide.md", "Mermaid"),
-    ("数学公式用哪个渲染引擎？", "docs/markdown-guide.md", "KaTeX"),
-    ("front matter 里的 aliases 字段有什么用？", "docs/markdown-guide.md", "aliases"),
-    ("表格支持合并单元格吗？", "docs/markdown-guide.md", "合并单元格"),
-    ("任务列表的勾选状态导出后保存在哪里？", "docs/markdown-guide.md", "tasks"),
-    ("笔记遵循哪个 Markdown 规范？", "docs/markdown-guide.md", "CommonMark"),
-
+    ('支持 Mermaid 图表吗？', 'docs/markdown-guide.md', 'Mermaid'),
+    ('数学公式用哪个渲染引擎？', 'docs/markdown-guide.md', 'KaTeX'),
+    ('front matter 里的 aliases 字段有什么用？', 'docs/markdown-guide.md', 'aliases'),
+    ('表格支持合并单元格吗？', 'docs/markdown-guide.md', '合并单元格'),
+    ('任务列表的勾选状态导出后保存在哪里？', 'docs/markdown-guide.md', 'tasks'),
+    ('笔记遵循哪个 Markdown 规范？', 'docs/markdown-guide.md', 'CommonMark'),
     # plugin-api.md
-    ("插件运行在什么环境里？", "docs/plugin-api.md", "独立"),
-    ("插件钩子超时会被怎么处理？", "docs/plugin-api.md", "超时"),
-    ("插件能直接写系统文件吗？", "docs/plugin-api.md", "越权"),
-    ("插件市场对开源有什么要求？", "docs/plugin-api.md", "开源"),
-    ("插件的权限怎么声明？", "docs/plugin-api.md", "permissions"),
-    ("插件怎么调试？", "docs/plugin-api.md", "开发者模式"),
-
+    ('插件运行在什么环境里？', 'docs/plugin-api.md', '独立'),
+    ('插件钩子超时会被怎么处理？', 'docs/plugin-api.md', '超时'),
+    ('插件能直接写系统文件吗？', 'docs/plugin-api.md', '越权'),
+    ('插件市场对开源有什么要求？', 'docs/plugin-api.md', '开源'),
+    ('插件的权限怎么声明？', 'docs/plugin-api.md', 'permissions'),
+    ('插件怎么调试？', 'docs/plugin-api.md', '开发者模式'),
     # security-privacy.md
-    ("软件会收集我的使用数据吗？", "docs/security-privacy.md", "遥测"),
-    ("索引加密使用什么算法？", "docs/security-privacy.md", "AES-256-GCM"),
-    ("忘记主密码还能找回索引吗？", "docs/security-privacy.md", "忘记密码"),
-    ("浏览器扩展会读取浏览历史吗？", "docs/security-privacy.md", "浏览历史"),
-    ("导出诊断包会包含笔记正文吗？", "docs/security-privacy.md", "不包含笔记正文"),
-
+    ('软件会收集我的使用数据吗？', 'docs/security-privacy.md', '遥测'),
+    ('索引加密使用什么算法？', 'docs/security-privacy.md', 'AES-256-GCM'),
+    ('忘记主密码还能找回索引吗？', 'docs/security-privacy.md', '忘记密码'),
+    ('浏览器扩展会读取浏览历史吗？', 'docs/security-privacy.md', '浏览历史'),
+    ('导出诊断包会包含笔记正文吗？', 'docs/security-privacy.md', '不包含笔记正文'),
     # troubleshooting.md
-    ("启动后白屏该怎么排查？", "docs/troubleshooting.md", "白屏"),
-    ("输入中文时出现重复字符怎么办？", "docs/troubleshooting.md", "IME"),
-    ("误删的笔记怎么恢复？", "docs/troubleshooting.md", "回收站"),
-    ("日志文件保存在哪里？", "docs/troubleshooting.md", "logs"),
-    ("索引重建速度大概是多少？", "docs/troubleshooting.md", "3000~5000"),
-    ("输入法候选词定位偏移怎么解决？", "docs/troubleshooting.md", "候选词"),
-
+    ('启动后白屏该怎么排查？', 'docs/troubleshooting.md', '白屏'),
+    ('输入中文时出现重复字符怎么办？', 'docs/troubleshooting.md', 'IME'),
+    ('误删的笔记怎么恢复？', 'docs/troubleshooting.md', '回收站'),
+    ('日志文件保存在哪里？', 'docs/troubleshooting.md', 'logs'),
+    ('索引重建速度大概是多少？', 'docs/troubleshooting.md', '3000~5000'),
+    ('输入法候选词定位偏移怎么解决？', 'docs/troubleshooting.md', '候选词'),
     # release-notes.md
-    ("2.4.0 版本新增了什么检索功能？", "docs/release-notes.md", "正则表达式"),
-    ("索引格式什么时候升级到 v3？", "docs/release-notes.md", "v3"),
-    ("2.0.0 为什么被标记为不兼容升级？", "docs/release-notes.md", "不兼容"),
-    ("1.x 系列还在维护吗？", "docs/release-notes.md", "停止维护"),
-    ("哪个版本开始支持局域网同步？", "docs/release-notes.md", "局域网直连同步"),
-
+    ('2.4.0 版本新增了什么检索功能？', 'docs/release-notes.md', '正则表达式'),
+    ('索引格式什么时候升级到 v3？', 'docs/release-notes.md', 'v3'),
+    ('2.0.0 为什么被标记为不兼容升级？', 'docs/release-notes.md', '不兼容'),
+    ('1.x 系列还在维护吗？', 'docs/release-notes.md', '停止维护'),
+    ('哪个版本开始支持局域网同步？', 'docs/release-notes.md', '局域网直连同步'),
     # mobile-app.md
-    ("移动端支持哪些系统版本？", "docs/mobile-app.md", "iOS 15.0"),
-    ("移动端怎么和桌面端同步数据？", "docs/mobile-app.md", "局域网同步"),
-    ("移动端的生物识别锁能加密数据吗？", "docs/mobile-app.md", "界面层锁定"),
-    ("移动端同步卡在正在接收索引是什么原因？", "docs/mobile-app.md", "存储空间不足"),
-    ("移动端为什么显示不出复杂公式？", "docs/mobile-app.md", "精简版渲染引擎"),
-
+    ('移动端支持哪些系统版本？', 'docs/mobile-app.md', 'iOS 15.0'),
+    ('移动端怎么和桌面端同步数据？', 'docs/mobile-app.md', '局域网同步'),
+    ('移动端的生物识别锁能加密数据吗？', 'docs/mobile-app.md', '界面层锁定'),
+    ('移动端同步卡在正在接收索引是什么原因？', 'docs/mobile-app.md', '存储空间不足'),
+    ('移动端为什么显示不出复杂公式？', 'docs/mobile-app.md', '精简版渲染引擎'),
     # team-collaboration.md
-    ("共享知识库的权限分几档？", "docs/team-collaboration.md", "只读"),
-    ("团队版怎么处理成员离职？", "docs/team-collaboration.md", "停用"),
-    ("私有化部署需要什么服务器配置？", "docs/team-collaboration.md", "4 核 8 GB"),
-    ("审计日志会保存笔记全文吗？", "docs/team-collaboration.md", "不存储笔记全文"),
-    ("评论可以标记状态吗？", "docs/team-collaboration.md", "待处理"),
-    ("共享知识库的编辑冲突怎么解决？", "docs/team-collaboration.md", "乐观并发控制"),
+    ('共享知识库的权限分几档？', 'docs/team-collaboration.md', '只读'),
+    ('团队版怎么处理成员离职？', 'docs/team-collaboration.md', '停用'),
+    ('私有化部署需要什么服务器配置？', 'docs/team-collaboration.md', '4 核 8 GB'),
+    ('审计日志会保存笔记全文吗？', 'docs/team-collaboration.md', '不存储笔记全文'),
+    ('评论可以标记状态吗？', 'docs/team-collaboration.md', '待处理'),
+    ('共享知识库的编辑冲突怎么解决？', 'docs/team-collaboration.md', '乐观并发控制'),
 ]
+
+LABELED_PARAPHRASE: List[Tuple[str, str, str]] = [
+    # 问法刻意避开原文用词；没有同义词表，这一层是主要短板所在
+    # product-overview.md
+    ('这个软件适合哪些人使用？', 'docs/product-overview.md', '咨询顾问'),
+    ('笔记能用别的编辑器打开吗？', 'docs/product-overview.md', '其他编辑器打开'),
+    ('剪藏之后还能查到来处吗？', 'docs/product-overview.md', '原始 URL'),
+    # faq.md
+    ('换电脑了怎么把旧笔记带过来？', 'docs/faq.md', 'Markdown 文件夹'),
+    ('导出的文件能直接发给别人看吗？', 'docs/faq.md', '便于分享'),
+    # pricing.md
+    ('团队版和个人版的差别主要在哪？', 'docs/pricing.md', '设备数量'),
+    # sync-guide.md
+    ('同步会不会很费流量？', 'docs/sync-guide.md', '与笔记长度基本无关'),
+    ('两台电脑同时改了同一篇会怎样？', 'docs/sync-guide.md', '保留双方版本'),
+    # search-syntax.md
+    ('只想在标题里找某个词，怎么搜？', 'docs/search-syntax.md', 'title:'),
+    ('能按创建时间筛选笔记吗？', 'docs/search-syntax.md', 'created:'),
+    # markdown-guide.md
+    ('数学公式能正常显示成符号吗？', 'docs/markdown-guide.md', '独立公式用'),
+    ('能画流程图和时序图吗？', 'docs/markdown-guide.md', '流程图'),
+    # plugin-api.md
+    ('自己写的小工具怎么装进去？', 'docs/plugin-api.md', 'manifest.json'),
+    ('插件能访问哪些网站由谁决定？', 'docs/plugin-api.md', 'allowedDomains'),
+    # security-privacy.md
+    ('我的笔记会被传到服务器上吗？', 'docs/security-privacy.md', '不存在任何形式的数据上传'),
+    ('程序崩溃会偷偷上报吗？', 'docs/security-privacy.md', '没有崩溃上报'),
+    # troubleshooting.md
+    ('打开就一片空白怎么排查？', 'docs/troubleshooting.md', '安全模式启动'),
+    ('打字时字符重复出现是什么原因？', 'docs/troubleshooting.md', '兼容输入法模式'),
+    ('删掉的笔记多久内还能找回？', 'docs/troubleshooting.md', '保留 30 天'),
+    # release-notes.md
+    ('最新版加了哪些功能？', 'docs/release-notes.md', '2.4.0'),
+    # mobile-app.md
+    ('手机端最低支持什么系统？', 'docs/mobile-app.md', 'Android 10'),
+    ('手机和电脑怎么互传笔记？', 'docs/mobile-app.md', 'mDNS 发现后配对'),
+    # team-collaboration.md
+    ('团队里谁能删掉整个知识库？', 'docs/team-collaboration.md', '可管理'),
+    ('成员离职后他建的笔记会被删吗？', 'docs/team-collaboration.md', '不会删除该成员创建的笔记'),
+]
+
+LABELED_DETAIL: List[Tuple[str, str, str]] = [
+    # 答案埋在具体数值 / 路径 / 协议名里，考察片段级定位精度
+    # product-overview.md
+    ('版本快照除数量外还按什么时间范围保留？', 'docs/product-overview.md', '90 天'),
+    ('关闭更新检查的入口在哪里？', 'docs/product-overview.md', '设置 → 通用 → 隐私'),
+    # faq.md
+    ('导入 Markdown 文件夹会保留原有目录结构吗？', 'docs/faq.md', '按原有的子目录结构建立笔记本'),
+    ('纯文本导入能识别哪些编码？', 'docs/faq.md', 'Big5'),
+    ('导出的 PDF 能附带反向链接吗？', 'docs/faq.md', '反向链接附录'),
+    # pricing.md
+    ('免费版的版本历史保留多久？', 'docs/pricing.md', '最近 30 天'),
+    ('个人版超期的版本归档到哪个目录？', 'docs/pricing.md', '.lark/archive'),
+    ('工单响应时间承诺多久？', 'docs/pricing.md', '1 个工作日'),
+    # sync-guide.md
+    ('自动提交的间隔能调整到多长？', 'docs/sync-guide.md', '1~60 分钟'),
+    ('拉取远端更新前会先执行什么 Git 操作？', 'docs/sync-guide.md', 'git stash'),
+    ('局域网同步配对时会交换什么？', 'docs/sync-guide.md', '交换公钥'),
+    # search-syntax.md
+    ('同一类限定符写两次会怎样？', 'docs/search-syntax.md', '只保留最后一个'),
+    ('正则检索单次最多执行多久？', 'docs/search-syntax.md', '2 秒'),
+    # markdown-guide.md
+    ('代码块支持多少种语言高亮？', 'docs/markdown-guide.md', '180'),
+    ('引用最多能嵌套几层？', 'docs/markdown-guide.md', '5 层'),
+    ('表格过宽导出 PDF 时最小缩到多少？', 'docs/markdown-guide.md', '60%'),
+    # plugin-api.md
+    ('插件调用了未声明的能力会抛什么错误？', 'docs/plugin-api.md', 'PermissionDeniedError'),
+    ('插件钩子连续超时几次会被禁用？', 'docs/plugin-api.md', '连续三次'),
+    # security-privacy.md
+    ('索引加密的密钥用什么算法派生？', 'docs/security-privacy.md', 'Argon2id'),
+    ('Linux 下知识库目录的权限位是多少？', 'docs/security-privacy.md', '0700'),
+    # troubleshooting.md
+    ('粘贴多长的文本会开始卡顿？', 'docs/troubleshooting.md', '5 万字符'),
+    ('撤销栈最多保留多少步？', 'docs/troubleshooting.md', '200 步'),
+    ('局域网同步要放行哪个 TCP 端口？', 'docs/troubleshooting.md', '47820'),
+    # release-notes.md
+    ('2.1.0 改用二元切分后索引体积变成多少倍？', 'docs/release-notes.md', '2.4 倍'),
+]
+
+LABELED_CONFUSABLE: List[Tuple[str, str, str]] = [
+    # 问法只给主题、不给唯一标识词，答案散落在多篇同主题文档中；
+    # 考察能否靠剩余词项把范围收敛到正确的那一篇。
+    # team-collaboration.md
+    ('服务端存储怎么加密？', 'docs/team-collaboration.md', 'AES-256 静态加密'),
+    # pricing.md
+    ('团队版的版本历史能保留多久？', 'docs/pricing.md', '永久保留'),
+    ('个人版可以同时在几台设备上用？', 'docs/pricing.md', '3 台'),
+    # troubleshooting.md
+    ('十万片段重建索引大约要多久？', 'docs/troubleshooting.md', '20~35 秒'),
+    ('局域网同步找不到设备要检查哪个 UDP 端口？', 'docs/troubleshooting.md', 'UDP 5353'),
+    # plugin-api.md
+    ('插件要求的最低主程序版本过低会怎样？', 'docs/plugin-api.md', '可能不兼容'),
+    # faq.md
+    ('导出能带上全部元数据吗？', 'docs/faq.md', '包含全部元数据'),
+    # pricing.md
+    ('免费版有广告吗？', 'docs/pricing.md', '没有广告'),
+    # troubleshooting.md
+    ('索引体积正常应该在什么范围？', 'docs/troubleshooting.md', '25%~40%'),
+    # mobile-app.md
+    ('移动端的索引占正文多少？', 'docs/mobile-app.md', '约为正文的 30%'),
+    # team-collaboration.md
+    ('审计日志能按哪些条件筛选？', 'docs/team-collaboration.md', '变更类型'),
+    # troubleshooting.md
+    ('知识库目录被占用要删哪个文件？', 'docs/troubleshooting.md', '.lark/lock'),
+    # security-privacy.md
+    ('版本快照存在哪个目录？', 'docs/security-privacy.md', '.lark/history/'),
+    ('开启索引加密后每次启动要做什么？', 'docs/security-privacy.md', '每次启动需输入主密码'),
+    # sync-guide.md
+    ('冲突副本合并完成后可以怎么处理？', 'docs/sync-guide.md', '批量清理'),
+    # team-collaboration.md
+    ('共享知识库的成员权限按什么粒度授予？', 'docs/team-collaboration.md', '成员粒度'),
+    # plugin-api.md
+    ('插件的网络访问默认允许哪些协议？', 'docs/plugin-api.md', '默认只允许 HTTPS'),
+    # troubleshooting.md
+    ('撤销和版本历史有什么区别？', 'docs/troubleshooting.md', '撤销栈上限'),
+    ('笔记超过多大就只索引一部分？', 'docs/troubleshooting.md', '1 MB'),
+    # search-syntax.md
+    ('热查询的延迟中位数是多少？', 'docs/search-syntax.md', '20 ms'),
+    # markdown-guide.md
+    ('表格太宽时导出会怎么处理？', 'docs/markdown-guide.md', '自动缩放'),
+    # mobile-app.md
+    ('移动端首次同步大知识库要多久？', 'docs/mobile-app.md', '10~30 分钟'),
+    # team-collaboration.md
+    ('私有化部署用什么数据库？', 'docs/team-collaboration.md', 'PostgreSQL 14'),
+    # troubleshooting.md
+    ('日志默认保留多久？', 'docs/troubleshooting.md', '7 天'),
+]
+
+TIERS: List[Tuple[str, List[Tuple[str, str, str]]]] = [
+    ("basic", LABELED_BASIC),
+    ("paraphrase", LABELED_PARAPHRASE),
+    ("detail", LABELED_DETAIL),
+    ("confusable", LABELED_CONFUSABLE),
+]
+
+LABELED: List[Tuple[str, str, str]] = [item for _, group in TIERS for item in group]
+
 
 # 领域外问题：语料中不存在答案，期望系统拒答
 OUT_OF_DOMAIN: List[str] = [
@@ -556,10 +689,41 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
               f"Passage Hit@1={m['passage_hit']['@1']:.3f} "
               f"@5={m['passage_hit']['@5']:.3f} | MRR@10={m['mrr@10']:.3f}")
 
+    # --- 分层指标 ---
+    # 143 条里混着四类难度，整体数字会被难例稀释。分层统计回答的是
+    # "方法在哪一类问法上失效"，比单一总分更有诊断价值。
+    tier_metrics: Dict[str, Dict] = {}
+    print("\n分层表现（本方案）：")
+    for tname, tset in TIERS:
+        tm = evaluate(rankers["full"], index, tset)
+        # 误拒率按**生产阈值**算，而不是本层标定值：用户实际感受到的是生产行为
+        ta = evaluate_abstention(index, rankers["full"], tset, OUT_OF_DOMAIN,
+                                 DEFAULT_CONFIG["abstain"])
+        tier_metrics[tname] = {
+            "queries": len(tset),
+            "doc_recall@1": tm["doc_recall"]["@1"],
+            "passage_hit@1": tm["passage_hit"]["@1"],
+            "passage_hit@5": tm["passage_hit"]["@5"],
+            "mrr@10": tm["mrr@10"],
+            "false_refusal_rate": ta["false_refusal_rate"],
+            # 每个对照方法在该层的表现：让"加权收益集中在哪一层"这类结论
+            # 可以直接从报告复算，而不是靠人工记忆引用某个数字
+            "by_method": {k: evaluate(rankers[k], index, tset)["passage_hit"]["@1"]
+                          for k in ("full", "bm25_plain", "tfidf", "keyword")},
+        }
+        print(f"  {tname:11s} n={len(tset):3d}  Doc Recall@1={tm['doc_recall']['@1']:.3f}  "
+              f"Passage Hit@1={tm['passage_hit']['@1']:.3f}  "
+              f"@5={tm['passage_hit']['@5']:.3f}  "
+              f"误拒={ta['false_refusal_rate']:.1%}")
+
     # --- 拒答阈值标定 ---
     legacy = evaluate_refusal_legacy(index, OUT_OF_DOMAIN)
     calib = calibrate_abstention(index, rankers["full"], LABELED, OUT_OF_DOMAIN)
     refusal = evaluate_abstention(index, rankers["full"], LABELED, OUT_OF_DOMAIN, calib["best"])
+    # 生产配置实际使用的阈值：与网格最优对照，决定要不要动线上参数。
+    # 差距在噪声范围内就不改——改阈值会改变线上行为，收益必须大到值得冒险。
+    prod = evaluate_abstention(index, rankers["full"], LABELED, OUT_OF_DOMAIN,
+                               DEFAULT_CONFIG["abstain"])
 
     print("\n拒答阈值标定（领域内 vs 领域外特征可分性）：")
     for key in ("vocab_cov", "idf_cov", "norm_score"):
@@ -577,6 +741,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
           f"（误拒 {refusal['falsely_refused']}/{refusal['queries_in_domain']} = "
           f"{refusal['false_refusal_rate']:.1%}，"
           f"平衡准确率 {refusal['balanced_accuracy']:.1%}）")
+    prod_th = DEFAULT_CONFIG["abstain"]
+    print(f"  生产阈值 vocab_cov≥{prod_th['vocab_cov']} idf_cov≥{prod_th['idf_cov']} "
+          f"norm_score≥{prod_th['norm_score']}："
+          f"拒答 {prod['refusal_accuracy']:.1%}，"
+          f"误拒 {prod['falsely_refused']}/{prod['queries_in_domain']} = "
+          f"{prod['false_refusal_rate']:.1%}，平衡 {prod['balanced_accuracy']:.1%}")
 
     # --- 延迟 ---
     queries = [q for q, _, _ in LABELED] + OUT_OF_DOMAIN
@@ -612,12 +782,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "corpus": {"docs": parse_info["docs"], "chunks": len(chunks),
                        "terms": len(index.df), "chars": total_chars,
                        "avgdl": round(index.avgdl, 1)},
-            "label_set": {"in_domain": len(LABELED), "out_of_domain": len(OUT_OF_DOMAIN)},
+            "label_set": {"in_domain": len(LABELED), "out_of_domain": len(OUT_OF_DOMAIN),
+                          "by_tier": {n: len(s) for n, s in TIERS}},
             "protocol": {"candidate_k": CANDIDATE_K, "max_per_doc": MAX_PER_DOC,
                          "top_k": max(KS), "mrr_k": MRR_K},
         },
         "metrics": metrics,
+        "tiers": tier_metrics,
         "refusal": refusal,
+        "refusal_production": prod,
         "refusal_calibration": calib,
         "refusal_baseline_legacy": legacy,
         "latency": latency,

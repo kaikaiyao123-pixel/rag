@@ -253,6 +253,9 @@ def build(report: Dict) -> str:
     labels = meta["label_set"]
     full = report["metrics"]["full"]
     ref = report["refusal"]
+    # 生产实际使用的阈值表现：页面上讲"最终效果"时以它为准，
+    # 网格最优解只用于说明标定过程，两者不能混用。
+    ref_prod = report.get("refusal_production") or ref
     legacy = report["refusal_baseline_legacy"]
     calib = report["refusal_calibration"]
     best = calib["best"]
@@ -318,6 +321,27 @@ def build(report: Dict) -> str:
     miss_table = "".join(miss_rows) or '<tr><td colspan="4">无</td></tr>'
 
     pareto = [p for p in calib["pareto"] if p["false_refusal_rate"] <= 0.05][:5]
+    # 非退化的低误拒工作点：说明「压低误拒要牺牲拒答率」时引用它，避免写死数字
+    low_fr = min((p for p in calib["pareto"] if p["refusal_accuracy"] > 0),
+                 key=lambda p: (p["false_refusal_rate"], -p["refusal_accuracy"]))
+
+    # 加权相对纯 BM25 的分层增量，以及整体与 TF-IDF 的片段级差距：
+    # 全部从报告复算，避免"结论写死数字、数据一变就对不上"
+    tiers = report.get("tiers", {})
+
+    def _gain(tier: str) -> float:
+        bm = tiers.get(tier, {}).get("by_method", {})
+        if "full" not in bm or "bm25_plain" not in bm:
+            return 0.0
+        return (bm["full"] - bm["bm25_plain"]) * 100.0
+
+    g_basic = _gain("basic")
+    g_para = _gain("paraphrase")
+    g_detail = _gain("detail")
+    g_conf = _gain("confusable")
+    d_doc = (full["doc_recall"]["@1"] - report["metrics"]["bm25_plain"]["doc_recall"]["@1"]) * 100.0
+    d_pass = (full["passage_hit"]["@1"] - report["metrics"]["bm25_plain"]["passage_hit"]["@1"]) * 100.0
+    gap_tfidf = (full["passage_hit"]["@1"] - report["metrics"]["tfidf"]["passage_hit"]["@1"]) * 100.0
     pareto_rows = "".join(
         f'<tr><td>{p["vocab_cov"]:.2f}</td><td>{p["idf_cov"]:.2f}</td>'
         f'<td>{p["norm_score"]:.2f}</td>'
@@ -327,7 +351,8 @@ def build(report: Dict) -> str:
         for p in pareto)
 
     tl = timeline([
-        ("建立评测基线", "构造 71 条标注查询（问题 → 期望文档 → 正确片段特征串）与 7 条领域外问题，"
+        ("建立评测基线", f"构造 {labels['in_domain']} 条标注查询（问题 → 期望文档 → 正确片段特征串）"
+                     "与 7 条领域外问题，按 basic / paraphrase / detail / confusable 四层难度组织，"
                      "同时实现 3 个对照方法，先用数据看清现状，而不是凭感觉判断好坏。"),
         ("暴露缺陷", f"首次评测发现：检索指标尚可（Doc Recall@5 = {pct(full['doc_recall']['@5'], 0)}），"
                    f"但**拒答准确率只有 {pct(legacy['refusal_accuracy'])}** —— 系统几乎不对领域外问题拒答，"
@@ -338,9 +363,10 @@ def build(report: Dict) -> str:
         ("二次修正", "第一版特征把「不在词表中的词项」排除在分母外，导致领域外查询分母趋近 0、"
                    "比值反而被放大到 1.0 以上 —— 特征方向完全反了。"
                    "修正为按「语料中最稀有词项」计权后，三项特征方向一致、分离清晰。"),
-        ("标定与复测", f"网格搜索阈值，发现 84 组解并列最优；改用 max-min 间隔准则二次筛选，"
+        ("标定与复测", f"网格搜索阈值，发现 {best['tied_optima']} 组解并列最优；改用 max-min 间隔准则二次筛选，"
                     f"把阈值推到特征分布空隙中央。最终拒答率 {pct(legacy['refusal_accuracy'])} → "
-                    f"{pct(ref['refusal_accuracy'])}，误拒 {ref['falsely_refused']}/{ref['queries_in_domain']}。"),
+                    f"{pct(ref_prod['refusal_accuracy'])}，误拒 {ref_prod['falsely_refused']}/"
+                    f"{ref_prod['queries_in_domain']}。"),
     ])
 
     return f"""<!DOCTYPE html>
@@ -476,7 +502,7 @@ def build(report: Dict) -> str:
     {metric_card(pct(full["doc_recall"]["@5"], 0), "文档级召回 Recall@5", f"{corpus['docs']} 篇文档 / {labels['in_domain']} 条标注查询", accent=True)}
     {metric_card(pct(full["passage_hit"]["@1"]), "片段级命中 Hit@1", "定位到正确段落，而非仅正确文档")}
     {metric_card(f"{full['mrr@10']:.3f}", "MRR@10", "首个正确结果的排名倒数均值")}
-    {metric_card(pct(ref["refusal_accuracy"], 0), "拒答准确率", f"误拒 {pct(ref['false_refusal_rate'])}，改造前仅 {pct(legacy['refusal_accuracy'])}")}
+    {metric_card(pct(ref_prod["refusal_accuracy"], 0), "拒答准确率", f"误拒 {pct(ref_prod['false_refusal_rate'])}，改造前仅 {pct(legacy['refusal_accuracy'])}")}
     {metric_card(f"{lat['p95_ms']} ms", "查询延迟 P95", f"P50 {lat['p50_ms']} ms · {lat['samples']} 次采样")}
   </div>
 </header>
@@ -581,9 +607,16 @@ def build(report: Dict) -> str:
     </table>
     </div>
     <p class="note">
-      结论：标题加权与覆盖率加权在 Top-1 指标上带来稳定提升（Doc Recall@1 +4.2pt，Passage Hit@1 +4.2pt，
-      MRR +0.024），但在 Top-5 上二者打平——说明这两项加权的作用是<strong>重排序</strong>而非扩大召回，
-      与设计意图一致。TF-IDF 余弦在文档级接近本方案，但片段级明显落后，原因是缺少文档长度归一化。
+      结论：两项加权的收益只出现在「问法与原文用词重合」的 basic 层
+      （Passage Hit@1 {g_basic:+.1f}pt），在 paraphrase 层 {g_para:+.1f}pt、
+      detail 层 {g_detail:+.1f}pt，在跨文档区分的 confusable 层 {g_conf:+.1f}pt。
+      它们的本质是<strong>在词项已重叠的前提下做重排序</strong>：既弥补不了同义改写造成的
+      词项缺失，也会放大标题词的误导 —— confusable 层唯一的失分项是「团队版的版本历史能保留多久？」，
+      标题含「团队」的干扰段落被排到了首位。整体 Top-1 提升因此只有
+      {d_doc:+.1f}pt（文档级）/ {d_pass:+.1f}pt（片段级），而在 Top-5 上与纯 BM25 打平
+      —— 加权不扩大召回，与设计意图一致。
+      TF-IDF 余弦在文档级接近本方案、片段级落后 {gap_tfidf:.1f}pt；两者在 TF 的进入方式上不同
+      （BM25 有 TF 饱和与部分长度归一化），具体是哪一项造成差距，本项目未做拆解。
     </p>
   </div>
 
@@ -605,11 +638,14 @@ def build(report: Dict) -> str:
     </table>
     </div>
     <p class="note">
-      帕累托前沿（已截取误拒率 ≤ 5% 的工作点）。最终选定
-      <code class="mono">vocab_cov ≥ {best['vocab_cov']}</code>、
-      <code class="mono">idf_cov ≥ {best['idf_cov']}</code>，
-      <code class="mono">norm_score</code> 的最优阈值退化为 0 —— 该特征本身有区分度，
-      但信息已被前两项覆盖，属冗余特征，因此不参与默认判定。
+      帕累托前沿中误拒率 ≤ 5% 的一段。权衡很直接：把误拒压到
+      {pct(low_fr['false_refusal_rate'])}，拒答率就只剩 {pct(low_fr['refusal_accuracy'])}。
+      要拿到 100% 拒答率，必须接受 {pct(ref_prod['false_refusal_rate'])} 的误拒 ——
+      这是两类查询特征分布重叠的客观结果，不是参数没调好。生产配置停在
+      <code class="mono">vocab_cov ≥ 0.32</code>、<code class="mono">idf_cov ≥ 0.18</code>；
+      网格搜索在本次标注集上的最优解 0.25 / 0.12 / 0.3 只优 0.3pt，且 max-min 间隔
+      仅 {best['robustness_margin']:.3f}（阈值几乎贴在样本值上），不构成稳健工作点，
+      因此没有替换线上参数。
     </p>
   </div>
 

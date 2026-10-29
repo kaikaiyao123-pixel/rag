@@ -128,11 +128,11 @@
   </div>
 
   <div class="metrics">
-    <div class="mc mc-a"><div class="mc-v" style="color:#2f5fd8">100%</div><div class="mc-l">文档级召回 Recall@5</div><div class="mc-h">12 篇文档 / 71 条标注查询</div></div>
-    <div class="mc"><div class="mc-v" style="color:#14181f">80.3%</div><div class="mc-l">片段级命中 Hit@1</div><div class="mc-h">定位到正确段落，而非仅正确文档</div></div>
-    <div class="mc"><div class="mc-v" style="color:#14181f">0.933</div><div class="mc-l">MRR@10</div><div class="mc-h">首个正确结果的排名倒数均值</div></div>
-    <div class="mc"><div class="mc-v" style="color:#14181f">100%</div><div class="mc-l">拒答准确率</div><div class="mc-h">误拒 0.0%，改造前仅 28.6%</div></div>
-    <div class="mc"><div class="mc-v" style="color:#14181f">0.537 ms</div><div class="mc-l">查询延迟 P95</div><div class="mc-h">P50 0.148 ms · 390 次采样</div></div>
+    <div class="mc mc-a"><div class="mc-v" style="color:#2f5fd8">97%</div><div class="mc-l">文档级召回 Recall@5</div><div class="mc-h">12 篇文档 / 143 条标注查询</div></div>
+    <div class="mc"><div class="mc-v" style="color:#14181f">76.9%</div><div class="mc-l">片段级命中 Hit@1</div><div class="mc-h">定位到正确段落，而非仅正确文档</div></div>
+    <div class="mc"><div class="mc-v" style="color:#14181f">0.891</div><div class="mc-l">MRR@10</div><div class="mc-h">首个正确结果的排名倒数均值</div></div>
+    <div class="mc"><div class="mc-v" style="color:#14181f">100%</div><div class="mc-l">拒答准确率</div><div class="mc-h">误拒 11.9%，改造前仅 28.6%</div></div>
+    <div class="mc"><div class="mc-v" style="color:#14181f">0.283 ms</div><div class="mc-l">查询延迟 P95</div><div class="mc-h">P50 0.089 ms · 750 次采样</div></div>
   </div>
 </header>
 
@@ -142,10 +142,10 @@
   <div class="card">
     <dl class="kv">
       <dt>我的角色</dt><dd>独立完成：需求定义、架构设计、算法实现、评测设计与调优</dd>
-      <dt>工程规模</dt><dd>2573 行有效代码（3103 行含注释），9 个模块 + 评测脚本 + 网页生成脚本</dd>
+      <dt>工程规模</dt><dd>2718 行有效代码（3312 行含注释），9 个模块 + 评测脚本 + 网页生成脚本</dd>
       <dt>知识库规模</dt><dd>12 篇文档 → 98 个片段 → 3991 个词项，正文 16,808 字符</dd>
-      <dt>评测规模</dt><dd>71 条领域内标注查询 + 7 条领域外问题，4 种方法横向对比</dd>
-      <dt>性能</dt><dd>全量建索引 20 ms（解析分块 5 ms + 索引 15 ms）；索引文件 227.2 KB</dd>
+      <dt>评测规模</dt><dd>143 条领域内标注查询 + 7 条领域外问题，4 种方法横向对比</dd>
+      <dt>性能</dt><dd>全量建索引 11 ms（解析分块 3 ms + 索引 9 ms）；索引文件 227.2 KB</dd>
       <dt>技术约束</dt><dd>零第三方依赖（仅标准库），检索链路完全离线，生成层可选接入任意 OpenAI 兼容接口</dd>
     </dl>
   </div>
@@ -206,7 +206,7 @@
 <section>
   <h2><span class="n">04</span>量化评测</h2>
   <p class="sub">
-    评测集由 71 条手工标注查询组成，每条标注「问题 → 期望文档 → 正确片段中必须出现的特征串」；
+    评测集由 143 条手工标注查询组成，每条标注「问题 → 期望文档 → 正确片段中必须出现的特征串」；
     脚本会先校验特征串确实存在于期望文档中，防止标注错误污染指标。
     同时给出两档判定：文档级（召回对文档）与片段级（召回对具体段落），
     避免用宽松指标掩盖「找到了文档但没找到正确段落」的真实缺陷。
@@ -216,13 +216,13 @@
   <div class="chart">
     <h3>本方案在各召回深度上的表现</h3>
     <p>Top-1 已能定位到 88.7% 的期望文档，Top-5 达到 100%。</p>
-    <svg viewBox="0 0 680 300" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" font-family="inherit"><line x1="60" y1="244.0" x2="662.0" y2="244.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="248.0" text-anchor="end" font-size="11" fill="#78828f">0%</text><line x1="60" y1="194.0" x2="662.0" y2="194.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="198.0" text-anchor="end" font-size="11" fill="#78828f">25%</text><line x1="60" y1="144.0" x2="662.0" y2="144.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="148.0" text-anchor="end" font-size="11" fill="#78828f">50%</text><line x1="60" y1="94.0" x2="662.0" y2="94.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="98.0" text-anchor="end" font-size="11" fill="#78828f">75%</text><line x1="60" y1="44.0" x2="662.0" y2="44.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="48.0" text-anchor="end" font-size="11" fill="#78828f">100%</text><rect x="60" y="16" width="10" height="10" rx="2" fill="#2f5fd8"/><text x="75" y="25" font-size="11.5" fill="#4a5464">@1</text><rect x="111.4" y="16" width="10" height="10" rx="2" fill="#0f9b8e"/><text x="126.4" y="25" font-size="11.5" fill="#4a5464">@3</text><rect x="162.8" y="16" width="10" height="10" rx="2" fill="#c9741f"/><text x="177.8" y="25" font-size="11.5" fill="#4a5464">@5</text><rect x="145.5" y="66.5" width="40.0" height="177.5" rx="3" fill="#2f5fd8"/><text x="165.5" y="61.5" text-anchor="middle" font-size="10.5" fill="#4a5464">0.887</text><rect x="190.5" y="49.6" width="40.0" height="194.4" rx="3" fill="#0f9b8e"/><text x="210.5" y="44.6" text-anchor="middle" font-size="10.5" fill="#4a5464">0.972</text><rect x="235.5" y="44.0" width="40.0" height="200.0" rx="3" fill="#c9741f"/><text x="255.5" y="39.0" text-anchor="middle" font-size="10.5" fill="#4a5464">1.000</text><text x="210.5" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">文档级命中 Doc Recall</text><rect x="446.5" y="83.4" width="40.0" height="160.6" rx="3" fill="#2f5fd8"/><text x="466.5" y="78.4" text-anchor="middle" font-size="10.5" fill="#4a5464">0.803</text><rect x="491.5" y="52.5" width="40.0" height="191.5" rx="3" fill="#0f9b8e"/><text x="511.5" y="47.5" text-anchor="middle" font-size="10.5" fill="#4a5464">0.958</text><rect x="536.5" y="46.8" width="40.0" height="197.2" rx="3" fill="#c9741f"/><text x="556.5" y="41.8" text-anchor="middle" font-size="10.5" fill="#4a5464">0.986</text><text x="511.5" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">片段级命中 Passage Hit</text><line x1="60" y1="244" x2="662" y2="244" stroke="#4a5464" stroke-width="1.2"/></svg>
+    <svg viewBox="0 0 680 300" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" font-family="inherit"><line x1="60" y1="244.0" x2="662.0" y2="244.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="248.0" text-anchor="end" font-size="11" fill="#78828f">0%</text><line x1="60" y1="194.0" x2="662.0" y2="194.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="198.0" text-anchor="end" font-size="11" fill="#78828f">25%</text><line x1="60" y1="144.0" x2="662.0" y2="144.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="148.0" text-anchor="end" font-size="11" fill="#78828f">50%</text><line x1="60" y1="94.0" x2="662.0" y2="94.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="98.0" text-anchor="end" font-size="11" fill="#78828f">75%</text><line x1="60" y1="44.0" x2="662.0" y2="44.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="48.0" text-anchor="end" font-size="11" fill="#78828f">100%</text><rect x="60" y="16" width="10" height="10" rx="2" fill="#2f5fd8"/><text x="75" y="25" font-size="11.5" fill="#4a5464">@1</text><rect x="111.4" y="16" width="10" height="10" rx="2" fill="#0f9b8e"/><text x="126.4" y="25" font-size="11.5" fill="#4a5464">@3</text><rect x="162.8" y="16" width="10" height="10" rx="2" fill="#c9741f"/><text x="177.8" y="25" font-size="11.5" fill="#4a5464">@5</text><rect x="145.5" y="76.2" width="40.0" height="167.8" rx="3" fill="#2f5fd8"/><text x="165.5" y="71.2" text-anchor="middle" font-size="10.5" fill="#4a5464">0.839</text><rect x="190.5" y="56.6" width="40.0" height="187.4" rx="3" fill="#0f9b8e"/><text x="210.5" y="51.6" text-anchor="middle" font-size="10.5" fill="#4a5464">0.937</text><rect x="235.5" y="49.6" width="40.0" height="194.4" rx="3" fill="#c9741f"/><text x="255.5" y="44.6" text-anchor="middle" font-size="10.5" fill="#4a5464">0.972</text><text x="210.5" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">文档级命中 Doc Recall</text><rect x="446.5" y="90.2" width="40.0" height="153.8" rx="3" fill="#2f5fd8"/><text x="466.5" y="85.2" text-anchor="middle" font-size="10.5" fill="#4a5464">0.769</text><rect x="491.5" y="63.6" width="40.0" height="180.4" rx="3" fill="#0f9b8e"/><text x="511.5" y="58.6" text-anchor="middle" font-size="10.5" fill="#4a5464">0.902</text><rect x="536.5" y="59.4" width="40.0" height="184.6" rx="3" fill="#c9741f"/><text x="556.5" y="54.4" text-anchor="middle" font-size="10.5" fill="#4a5464">0.923</text><text x="511.5" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">片段级命中 Passage Hit</text><line x1="60" y1="244" x2="662" y2="244" stroke="#4a5464" stroke-width="1.2"/></svg>
   </div>
 
   <div class="chart">
     <h3>消融对比：替换打分函数</h3>
     <p>在完全相同的分词、分块与后处理管线上，仅替换打分函数。</p>
-    <svg viewBox="0 0 680 320" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" font-family="inherit"><line x1="60" y1="264.0" x2="662.0" y2="264.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="268.0" text-anchor="end" font-size="11" fill="#78828f">0%</text><line x1="60" y1="209.0" x2="662.0" y2="209.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="213.0" text-anchor="end" font-size="11" fill="#78828f">25%</text><line x1="60" y1="154.0" x2="662.0" y2="154.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="158.0" text-anchor="end" font-size="11" fill="#78828f">50%</text><line x1="60" y1="99.0" x2="662.0" y2="99.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="103.0" text-anchor="end" font-size="11" fill="#78828f">75%</text><line x1="60" y1="44.0" x2="662.0" y2="44.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="48.0" text-anchor="end" font-size="11" fill="#78828f">100%</text><rect x="60" y="16" width="10" height="10" rx="2" fill="#2f5fd8"/><text x="75" y="25" font-size="11.5" fill="#4a5464">Doc Recall@1</text><rect x="183.4" y="16" width="10" height="10" rx="2" fill="#0f9b8e"/><text x="198.4" y="25" font-size="11.5" fill="#4a5464">Passage Hit@1</text><rect x="314.0" y="16" width="10" height="10" rx="2" fill="#c9741f"/><text x="329.0" y="25" font-size="11.5" fill="#4a5464">MRR@10</text><rect x="80.6" y="68.8" width="33.1" height="195.2" rx="3" fill="#2f5fd8"/><text x="97.1" y="63.8" text-anchor="middle" font-size="10.5" fill="#4a5464">0.887</text><rect x="118.7" y="87.4" width="33.1" height="176.6" rx="3" fill="#0f9b8e"/><text x="135.2" y="82.4" text-anchor="middle" font-size="10.5" fill="#4a5464">0.803</text><rect x="156.8" y="58.8" width="33.1" height="205.2" rx="3" fill="#c9741f"/><text x="173.4" y="53.8" text-anchor="middle" font-size="10.5" fill="#4a5464">0.933</text><text x="135.2" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">本方案</text><rect x="231.1" y="78.1" width="33.1" height="185.9" rx="3" fill="#2f5fd8"/><text x="247.6" y="73.1" text-anchor="middle" font-size="10.5" fill="#4a5464">0.845</text><rect x="269.2" y="96.7" width="33.1" height="167.3" rx="3" fill="#0f9b8e"/><text x="285.8" y="91.7" text-anchor="middle" font-size="10.5" fill="#4a5464">0.761</text><rect x="307.3" y="63.9" width="33.1" height="200.1" rx="3" fill="#c9741f"/><text x="323.9" y="58.9" text-anchor="middle" font-size="10.5" fill="#4a5464">0.909</text><text x="285.8" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">纯 Okapi BM25</text><rect x="381.6" y="75.0" width="33.1" height="189.0" rx="3" fill="#2f5fd8"/><text x="398.1" y="70.0" text-anchor="middle" font-size="10.5" fill="#4a5464">0.859</text><rect x="419.7" y="102.9" width="33.1" height="161.1" rx="3" fill="#0f9b8e"/><text x="436.2" y="97.9" text-anchor="middle" font-size="10.5" fill="#4a5464">0.732</text><rect x="457.8" y="63.0" width="33.1" height="201.0" rx="3" fill="#c9741f"/><text x="474.4" y="58.0" text-anchor="middle" font-size="10.5" fill="#4a5464">0.914</text><text x="436.2" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">TF-IDF 余弦</text><rect x="532.1" y="109.1" width="33.1" height="154.9" rx="3" fill="#2f5fd8"/><text x="548.6" y="104.1" text-anchor="middle" font-size="10.5" fill="#4a5464">0.704</text><rect x="570.2" y="121.5" width="33.1" height="142.5" rx="3" fill="#0f9b8e"/><text x="586.8" y="116.5" text-anchor="middle" font-size="10.5" fill="#4a5464">0.648</text><rect x="608.3" y="80.9" width="33.1" height="183.1" rx="3" fill="#c9741f"/><text x="624.9" y="75.9" text-anchor="middle" font-size="10.5" fill="#4a5464">0.832</text><text x="586.8" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">关键词命中计数</text><line x1="60" y1="264" x2="662" y2="264" stroke="#4a5464" stroke-width="1.2"/></svg>
+    <svg viewBox="0 0 680 320" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" font-family="inherit"><line x1="60" y1="264.0" x2="662.0" y2="264.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="268.0" text-anchor="end" font-size="11" fill="#78828f">0%</text><line x1="60" y1="209.0" x2="662.0" y2="209.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="213.0" text-anchor="end" font-size="11" fill="#78828f">25%</text><line x1="60" y1="154.0" x2="662.0" y2="154.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="158.0" text-anchor="end" font-size="11" fill="#78828f">50%</text><line x1="60" y1="99.0" x2="662.0" y2="99.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="103.0" text-anchor="end" font-size="11" fill="#78828f">75%</text><line x1="60" y1="44.0" x2="662.0" y2="44.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="48.0" text-anchor="end" font-size="11" fill="#78828f">100%</text><rect x="60" y="16" width="10" height="10" rx="2" fill="#2f5fd8"/><text x="75" y="25" font-size="11.5" fill="#4a5464">Doc Recall@1</text><rect x="183.4" y="16" width="10" height="10" rx="2" fill="#0f9b8e"/><text x="198.4" y="25" font-size="11.5" fill="#4a5464">Passage Hit@1</text><rect x="314.0" y="16" width="10" height="10" rx="2" fill="#c9741f"/><text x="329.0" y="25" font-size="11.5" fill="#4a5464">MRR@10</text><rect x="80.6" y="79.4" width="33.1" height="184.6" rx="3" fill="#2f5fd8"/><text x="97.1" y="74.4" text-anchor="middle" font-size="10.5" fill="#4a5464">0.839</text><rect x="118.7" y="94.8" width="33.1" height="169.2" rx="3" fill="#0f9b8e"/><text x="135.2" y="89.8" text-anchor="middle" font-size="10.5" fill="#4a5464">0.769</text><rect x="156.8" y="68.0" width="33.1" height="196.0" rx="3" fill="#c9741f"/><text x="173.4" y="63.0" text-anchor="middle" font-size="10.5" fill="#4a5464">0.891</text><text x="135.2" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">本方案</text><rect x="231.1" y="84.0" width="33.1" height="180.0" rx="3" fill="#2f5fd8"/><text x="247.6" y="79.0" text-anchor="middle" font-size="10.5" fill="#4a5464">0.818</text><rect x="269.2" y="97.9" width="33.1" height="166.1" rx="3" fill="#0f9b8e"/><text x="285.8" y="92.9" text-anchor="middle" font-size="10.5" fill="#4a5464">0.755</text><rect x="307.3" y="70.8" width="33.1" height="193.2" rx="3" fill="#c9741f"/><text x="323.9" y="65.8" text-anchor="middle" font-size="10.5" fill="#4a5464">0.878</text><text x="285.8" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">纯 Okapi BM25</text><rect x="381.6" y="85.5" width="33.1" height="178.5" rx="3" fill="#2f5fd8"/><text x="398.1" y="80.5" text-anchor="middle" font-size="10.5" fill="#4a5464">0.811</text><rect x="419.7" y="108.6" width="33.1" height="155.4" rx="3" fill="#0f9b8e"/><text x="436.2" y="103.6" text-anchor="middle" font-size="10.5" fill="#4a5464">0.706</text><rect x="457.8" y="72.2" width="33.1" height="191.8" rx="3" fill="#c9741f"/><text x="474.4" y="67.2" text-anchor="middle" font-size="10.5" fill="#4a5464">0.872</text><text x="436.2" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">TF-IDF 余弦</text><rect x="532.1" y="107.1" width="33.1" height="156.9" rx="3" fill="#2f5fd8"/><text x="548.6" y="102.1" text-anchor="middle" font-size="10.5" fill="#4a5464">0.713</text><rect x="570.2" y="119.4" width="33.1" height="144.6" rx="3" fill="#0f9b8e"/><text x="586.8" y="114.4" text-anchor="middle" font-size="10.5" fill="#4a5464">0.657</text><rect x="608.3" y="85.7" width="33.1" height="178.3" rx="3" fill="#c9741f"/><text x="624.9" y="80.7" text-anchor="middle" font-size="10.5" fill="#4a5464">0.810</text><text x="586.8" y="284.0" text-anchor="middle" font-size="12" fill="#14181f">关键词命中计数</text><line x1="60" y1="264" x2="662" y2="264" stroke="#4a5464" stroke-width="1.2"/></svg>
   </div>
 
   <div class="card" style="margin-top:14px">
@@ -232,20 +232,27 @@
         <th>方法</th><th class="num">Doc Recall@1</th><th class="num">Passage Hit@1</th>
         <th class="num">Passage Hit@5</th><th class="num">MRR@10</th>
       </tr></thead>
-      <tbody><tr class="hl"><td>本方案（BM25 + 标题加权 + 覆盖率）</td><td>0.887</td><td>0.803</td><td>0.986</td><td>0.933</td></tr><tr><td>纯 Okapi BM25</td><td>0.845</td><td>0.761</td><td>0.986</td><td>0.909</td></tr><tr><td>TF-IDF 余弦</td><td>0.859</td><td>0.732</td><td>0.944</td><td>0.914</td></tr><tr><td>关键词命中计数</td><td>0.704</td><td>0.648</td><td>0.958</td><td>0.832</td></tr></tbody>
+      <tbody><tr class="hl"><td>本方案（BM25 + 标题加权 + 覆盖率）</td><td>0.839</td><td>0.769</td><td>0.923</td><td>0.891</td></tr><tr><td>纯 Okapi BM25</td><td>0.818</td><td>0.755</td><td>0.923</td><td>0.878</td></tr><tr><td>TF-IDF 余弦</td><td>0.811</td><td>0.706</td><td>0.902</td><td>0.872</td></tr><tr><td>关键词命中计数</td><td>0.713</td><td>0.657</td><td>0.909</td><td>0.810</td></tr></tbody>
     </table>
     </div>
     <p class="note">
-      结论：标题加权与覆盖率加权在 Top-1 指标上带来稳定提升（Doc Recall@1 +4.2pt，Passage Hit@1 +4.2pt，
-      MRR +0.024），但在 Top-5 上二者打平——说明这两项加权的作用是<strong>重排序</strong>而非扩大召回，
-      与设计意图一致。TF-IDF 余弦在文档级接近本方案，但片段级明显落后，原因是缺少文档长度归一化。
+      结论：两项加权的收益只出现在「问法与原文用词重合」的 basic 层
+      （Passage Hit@1 +4.2pt），在 paraphrase 层 +0.0pt、
+      detail 层 +0.0pt，在跨文档区分的 confusable 层 -4.2pt。
+      它们的本质是<strong>在词项已重叠的前提下做重排序</strong>：既弥补不了同义改写造成的
+      词项缺失，也会放大标题词的误导 —— confusable 层唯一的失分项是「团队版的版本历史能保留多久？」，
+      标题含「团队」的干扰段落被排到了首位。整体 Top-1 提升因此只有
+      +2.1pt（文档级）/ +1.4pt（片段级），而在 Top-5 上与纯 BM25 打平
+      —— 加权不扩大召回，与设计意图一致。
+      TF-IDF 余弦在文档级接近本方案、片段级落后 6.3pt；两者在 TF 的进入方式上不同
+      （BM25 有 TF 饱和与部分长度归一化），具体是哪一项造成差距，本项目未做拆解。
     </p>
   </div>
 
   <div class="chart">
     <h3>拒答判定：领域内 vs 领域外问题的特征分布</h3>
     <p>三项特征均按「查询内归一化」计算，虚线为网格搜索标定出的阈值。</p>
-    <svg viewBox="0 0 680 300" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" font-family="inherit"><line x1="60" y1="244.0" x2="662.0" y2="244.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="248.0" text-anchor="end" font-size="11" fill="#78828f">0%</text><line x1="60" y1="194.0" x2="662.0" y2="194.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="198.0" text-anchor="end" font-size="11" fill="#78828f">25%</text><line x1="60" y1="144.0" x2="662.0" y2="144.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="148.0" text-anchor="end" font-size="11" fill="#78828f">50%</text><line x1="60" y1="94.0" x2="662.0" y2="94.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="98.0" text-anchor="end" font-size="11" fill="#78828f">75%</text><line x1="60" y1="44.0" x2="662.0" y2="44.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="48.0" text-anchor="end" font-size="11" fill="#78828f">100%</text><rect x="60" y="16" width="10" height="10" rx="2" fill="#2f5fd8"/><text x="75" y="25" font-size="11.5" fill="#4a5464">领域内问题（中位）</text><rect x="161.8" y="16" width="10" height="10" rx="2" fill="#c9741f"/><text x="176.8" y="25" font-size="11.5" fill="#4a5464">领域外问题（中位）</text><rect x="117.8" y="110.7" width="40.0" height="133.3" rx="3" fill="#2f5fd8"/><text x="137.8" y="105.7" text-anchor="middle" font-size="10.5" fill="#4a5464">0.667</text><rect x="162.8" y="227.3" width="40.0" height="16.7" rx="3" fill="#c9741f"/><text x="182.8" y="222.3" text-anchor="middle" font-size="10.5" fill="#4a5464">0.083</text><text x="160.3" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">词表覆盖 vocab_cov</text><rect x="318.5" y="161.9" width="40.0" height="82.1" rx="3" fill="#2f5fd8"/><text x="338.5" y="156.9" text-anchor="middle" font-size="10.5" fill="#4a5464">0.410</text><rect x="363.5" y="228.6" width="40.0" height="15.4" rx="3" fill="#c9741f"/><text x="383.5" y="223.6" text-anchor="middle" font-size="10.5" fill="#4a5464">0.077</text><text x="361.0" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">IDF 覆盖 idf_cov</text><rect x="519.2" y="93.0" width="40.0" height="151.0" rx="3" fill="#2f5fd8"/><text x="539.2" y="88.0" text-anchor="middle" font-size="10.5" fill="#4a5464">0.755</text><rect x="564.2" y="209.2" width="40.0" height="34.8" rx="3" fill="#c9741f"/><text x="584.2" y="204.2" text-anchor="middle" font-size="10.5" fill="#4a5464">0.174</text><text x="561.7" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">归一化得分 norm_score</text><line x1="111.8" y1="180.0" x2="208.8" y2="180.0" stroke="#14181f" stroke-width="1.6" stroke-dasharray="5 3"/><text x="214.8" y="183.5" font-size="10.5" fill="#14181f">阈值 0.320</text><line x1="312.5" y1="208.0" x2="409.5" y2="208.0" stroke="#14181f" stroke-width="1.6" stroke-dasharray="5 3"/><text x="415.5" y="211.5" font-size="10.5" fill="#14181f">阈值 0.180</text><line x1="60" y1="244" x2="662" y2="244" stroke="#4a5464" stroke-width="1.2"/></svg>
+    <svg viewBox="0 0 680 300" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" font-family="inherit"><line x1="60" y1="244.0" x2="662.0" y2="244.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="248.0" text-anchor="end" font-size="11" fill="#78828f">0%</text><line x1="60" y1="194.0" x2="662.0" y2="194.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="198.0" text-anchor="end" font-size="11" fill="#78828f">25%</text><line x1="60" y1="144.0" x2="662.0" y2="144.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="148.0" text-anchor="end" font-size="11" fill="#78828f">50%</text><line x1="60" y1="94.0" x2="662.0" y2="94.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="98.0" text-anchor="end" font-size="11" fill="#78828f">75%</text><line x1="60" y1="44.0" x2="662.0" y2="44.0" stroke="#e3e7ee" stroke-width="1"/><text x="50" y="48.0" text-anchor="end" font-size="11" fill="#78828f">100%</text><rect x="60" y="16" width="10" height="10" rx="2" fill="#2f5fd8"/><text x="75" y="25" font-size="11.5" fill="#4a5464">领域内问题（中位）</text><rect x="161.8" y="16" width="10" height="10" rx="2" fill="#c9741f"/><text x="176.8" y="25" font-size="11.5" fill="#4a5464">领域外问题（中位）</text><rect x="117.8" y="124.0" width="40.0" height="120.0" rx="3" fill="#2f5fd8"/><text x="137.8" y="119.0" text-anchor="middle" font-size="10.5" fill="#4a5464">0.600</text><rect x="162.8" y="227.3" width="40.0" height="16.7" rx="3" fill="#c9741f"/><text x="182.8" y="222.3" text-anchor="middle" font-size="10.5" fill="#4a5464">0.083</text><text x="160.3" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">词表覆盖 vocab_cov</text><rect x="318.5" y="171.9" width="40.0" height="72.1" rx="3" fill="#2f5fd8"/><text x="338.5" y="166.9" text-anchor="middle" font-size="10.5" fill="#4a5464">0.360</text><rect x="363.5" y="228.6" width="40.0" height="15.4" rx="3" fill="#c9741f"/><text x="383.5" y="223.6" text-anchor="middle" font-size="10.5" fill="#4a5464">0.077</text><text x="361.0" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">IDF 覆盖 idf_cov</text><rect x="519.2" y="110.2" width="40.0" height="133.8" rx="3" fill="#2f5fd8"/><text x="539.2" y="105.2" text-anchor="middle" font-size="10.5" fill="#4a5464">0.669</text><rect x="564.2" y="209.2" width="40.0" height="34.8" rx="3" fill="#c9741f"/><text x="584.2" y="204.2" text-anchor="middle" font-size="10.5" fill="#4a5464">0.174</text><text x="561.7" y="264.0" text-anchor="middle" font-size="12" fill="#14181f">归一化得分 norm_score</text><line x1="111.8" y1="194.0" x2="208.8" y2="194.0" stroke="#14181f" stroke-width="1.6" stroke-dasharray="5 3"/><text x="214.8" y="197.5" font-size="10.5" fill="#14181f">阈值 0.250</text><line x1="312.5" y1="220.0" x2="409.5" y2="220.0" stroke="#14181f" stroke-width="1.6" stroke-dasharray="5 3"/><text x="415.5" y="223.5" font-size="10.5" fill="#14181f">阈值 0.120</text><line x1="513.2" y1="184.0" x2="610.2" y2="184.0" stroke="#14181f" stroke-width="1.6" stroke-dasharray="5 3"/><text x="616.2" y="187.5" font-size="10.5" fill="#14181f">阈值 0.300</text><line x1="60" y1="244" x2="662" y2="244" stroke="#4a5464" stroke-width="1.2"/></svg>
   </div>
 
   <div class="card" style="margin-top:14px">
@@ -256,15 +263,18 @@
         <th class="num">norm_score 阈值</th><th class="num">拒答准确率</th>
         <th class="num">误拒率</th><th class="num">平衡准确率</th>
       </tr></thead>
-      <tbody><tr><td>0.32</td><td>0.20</td><td>0.30</td><td>100.0%</td><td>0.0%</td><td>100.0%</td></tr><tr><td>0.32</td><td>0.15</td><td>0.25</td><td>85.7%</td><td>0.0%</td><td>92.9%</td></tr><tr><td>0.20</td><td>0.10</td><td>0.00</td><td>71.4%</td><td>0.0%</td><td>85.7%</td></tr><tr><td>0.00</td><td>0.10</td><td>0.00</td><td>57.1%</td><td>0.0%</td><td>78.6%</td></tr><tr><td>0.00</td><td>0.00</td><td>0.15</td><td>28.6%</td><td>0.0%</td><td>64.3%</td></tr></tbody>
+      <tbody><tr><td>0.00</td><td>0.00</td><td>0.00</td><td>0.0%</td><td>0.0%</td><td>50.0%</td></tr><tr><td>0.20</td><td>0.00</td><td>0.00</td><td>71.4%</td><td>0.7%</td><td>85.4%</td></tr><tr><td>0.25</td><td>0.00</td><td>0.00</td><td>85.7%</td><td>2.1%</td><td>91.8%</td></tr><tr><td>0.00</td><td>0.10</td><td>0.00</td><td>57.1%</td><td>2.8%</td><td>77.2%</td></tr><tr><td>0.00</td><td>0.00</td><td>0.15</td><td>28.6%</td><td>2.8%</td><td>62.9%</td></tr></tbody>
     </table>
     </div>
     <p class="note">
-      帕累托前沿（已截取误拒率 ≤ 5% 的工作点）。最终选定
-      <code class="mono">vocab_cov ≥ 0.32</code>、
-      <code class="mono">idf_cov ≥ 0.18</code>，
-      <code class="mono">norm_score</code> 的最优阈值退化为 0 —— 该特征本身有区分度，
-      但信息已被前两项覆盖，属冗余特征，因此不参与默认判定。
+      帕累托前沿中误拒率 ≤ 5% 的一段。权衡很直接：把误拒压到
+      0.7%，拒答率就只剩 71.4%。
+      要拿到 100% 拒答率，必须接受 11.9% 的误拒 ——
+      这是两类查询特征分布重叠的客观结果，不是参数没调好。生产配置停在
+      <code class="mono">vocab_cov ≥ 0.32</code>、<code class="mono">idf_cov ≥ 0.18</code>；
+      网格搜索在本次标注集上的最优解 0.25 / 0.12 / 0.3 只优 0.3pt，且 max-min 间隔
+      仅 0.001（阈值几乎贴在样本值上），不构成稳健工作点，
+      因此没有替换线上参数。
     </p>
   </div>
 
@@ -273,10 +283,10 @@
       <h3>性能与资源</h3>
       <table>
         <tbody>
-          <tr><td>查询延迟 P50</td><td class="num">0.148 ms</td></tr>
-          <tr><td>查询延迟 P95</td><td class="num">0.537 ms</td></tr>
-          <tr><td>查询延迟 P99</td><td class="num">0.725 ms</td></tr>
-          <tr><td>索引构建</td><td class="num">20 ms</td></tr>
+          <tr><td>查询延迟 P50</td><td class="num">0.089 ms</td></tr>
+          <tr><td>查询延迟 P95</td><td class="num">0.283 ms</td></tr>
+          <tr><td>查询延迟 P99</td><td class="num">0.549 ms</td></tr>
+          <tr><td>索引构建</td><td class="num">11 ms</td></tr>
           <tr><td>索引文件体积</td><td class="num">227.2 KB</td></tr>
           <tr><td>索引 / 正文比</td><td class="num">13.84×</td></tr>
           <tr><td>加载堆内存峰值</td><td class="num">2.6 MB</td></tr>
@@ -284,11 +294,11 @@
       </table>
     </div>
     <div class="card">
-      <h3>失败样例（1 条未在 Top-5 命中正确片段）</h3>
+      <h3>失败样例（11 条未在 Top-5 命中正确片段）</h3>
       <div class="tbl-wrap">
       <table>
         <thead><tr><th>查询</th><th>期望文档</th><th>文档级排名</th><th>实际 Top-1</th></tr></thead>
-        <tbody><tr><td>怎么按时间范围筛选笔记？</td><td>docs/search-syntax.md</td><td>5</td><td>docs/pricing.md</td></tr></tbody>
+        <tbody><tr><td>怎么按时间范围筛选笔记？</td><td>docs/search-syntax.md</td><td>5</td><td>docs/pricing.md</td></tr><tr><td>这个软件适合哪些人使用？</td><td>docs/product-overview.md</td><td>4</td><td>docs/faq.md</td></tr><tr><td>换电脑了怎么把旧笔记带过来？</td><td>docs/faq.md</td><td>1</td><td>docs/faq.md</td></tr><tr><td>两台电脑同时改了同一篇会怎样？</td><td>docs/sync-guide.md</td><td>3</td><td>docs/faq.md</td></tr><tr><td>只想在标题里找某个词，怎么搜？</td><td>docs/search-syntax.md</td><td>5</td><td>docs/faq.md</td></tr><tr><td>自己写的小工具怎么装进去？</td><td>docs/plugin-api.md</td><td>未进前 10</td><td>docs/product-overview.md</td></tr><tr><td>我的笔记会被传到服务器上吗？</td><td>docs/security-privacy.md</td><td>未进前 10</td><td>docs/product-overview.md</td></tr><tr><td>打开就一片空白怎么排查？</td><td>docs/troubleshooting.md</td><td>3</td><td>docs/faq.md</td></tr><tr><td>删掉的笔记多久内还能找回？</td><td>docs/troubleshooting.md</td><td>1</td><td>docs/troubleshooting.md</td></tr><tr><td>最新版加了哪些功能？</td><td>docs/release-notes.md</td><td>未进前 10</td><td>docs/team-collaboration.md</td></tr><tr><td>手机和电脑怎么互传笔记？</td><td>docs/mobile-app.md</td><td>未进前 10</td><td>docs/faq.md</td></tr></tbody>
       </table>
       </div>
       <p class="note">
@@ -307,7 +317,7 @@
     这是整个项目里我认为最有价值的部分：不是「我做了一个 RAG」，而是
     「我用评测发现自己做错了，并证明改对了」。
   </p>
-  <div class="card"><ol class="tl"><li><span class="tl-n">1</span><div><strong>建立评测基线</strong><p>构造 71 条标注查询（问题 → 期望文档 → 正确片段特征串）与 7 条领域外问题，同时实现 3 个对照方法，先用数据看清现状，而不是凭感觉判断好坏。</p></div></li><li><span class="tl-n">2</span><div><strong>暴露缺陷</strong><p>首次评测发现：检索指标尚可（Doc Recall@5 = 100%），但<strong>拒答准确率只有 28.6%</strong> —— 系统几乎不对领域外问题拒答，倾向于从无关片段里强行摘录，是典型幻觉来源。</p></div></li><li><span class="tl-n">3</span><div><strong>定位根因</strong><p>原拒答条件是「召回片段与问题无任何共享词项」。中文 bigram 分词下该条件几乎不可能成立：任意两句中文都会因「可以」「怎么」这类高频二元组产生重叠。改为构造查询内归一化特征：词表覆盖率与 IDF 覆盖率。</p></div></li><li><span class="tl-n">4</span><div><strong>二次修正</strong><p>第一版特征把「不在词表中的词项」排除在分母外，导致领域外查询分母趋近 0、比值反而被放大到 1.0 以上 —— 特征方向完全反了。修正为按「语料中最稀有词项」计权后，三项特征方向一致、分离清晰。</p></div></li><li><span class="tl-n">5</span><div><strong>标定与复测</strong><p>网格搜索阈值，发现 84 组解并列最优；改用 max-min 间隔准则二次筛选，把阈值推到特征分布空隙中央。最终拒答率 28.6% → 100.0%，误拒 0/71。</p></div></li></ol></div>
+  <div class="card"><ol class="tl"><li><span class="tl-n">1</span><div><strong>建立评测基线</strong><p>构造 143 条标注查询（问题 → 期望文档 → 正确片段特征串）与 7 条领域外问题，按 basic / paraphrase / detail / confusable 四层难度组织，同时实现 3 个对照方法，先用数据看清现状，而不是凭感觉判断好坏。</p></div></li><li><span class="tl-n">2</span><div><strong>暴露缺陷</strong><p>首次评测发现：检索指标尚可（Doc Recall@5 = 97%），但<strong>拒答准确率只有 28.6%</strong> —— 系统几乎不对领域外问题拒答，倾向于从无关片段里强行摘录，是典型幻觉来源。</p></div></li><li><span class="tl-n">3</span><div><strong>定位根因</strong><p>原拒答条件是「召回片段与问题无任何共享词项」。中文 bigram 分词下该条件几乎不可能成立：任意两句中文都会因「可以」「怎么」这类高频二元组产生重叠。改为构造查询内归一化特征：词表覆盖率与 IDF 覆盖率。</p></div></li><li><span class="tl-n">4</span><div><strong>二次修正</strong><p>第一版特征把「不在词表中的词项」排除在分母外，导致领域外查询分母趋近 0、比值反而被放大到 1.0 以上 —— 特征方向完全反了。修正为按「语料中最稀有词项」计权后，三项特征方向一致、分离清晰。</p></div></li><li><span class="tl-n">5</span><div><strong>标定与复测</strong><p>网格搜索阈值，发现 18 组解并列最优；改用 max-min 间隔准则二次筛选，把阈值推到特征分布空隙中央。最终拒答率 28.6% → 100.0%，误拒 17/143。</p></div></li></ol></div>
 </section>
 
 <section>
@@ -367,7 +377,7 @@
         <tr><td>增量更新</td><td>按文件 SHA-1 复用解析缓存，但倒排索引整体重建。万级片段内无感，再大需要引入分段索引</td></tr>
         <tr><td>并发</td><td>单进程；索引为单文件 JSON，不支持并发写。多进程场景需改为分片存储</td></tr>
         <tr><td>离线回答</td><td>仅摘录原句，不做推理、比较或数值换算，需靠大模型补足</td></tr>
-        <tr><td>评测集</td><td>由作者手工构造并自校验，规模 71 条；不能替代多人标注的公开基准</td></tr>
+        <tr><td>评测集</td><td>由作者手工构造并自校验，规模 143 条；不能替代多人标注的公开基准</td></tr>
       </tbody>
     </table>
     </div>
@@ -387,7 +397,7 @@ python rag.py ask "如何导入已有笔记？"
 <span class="c"># 3. 只看检索结果与得分</span>
 python rag.py search "导出支持哪些格式" -k 5
 
-<span class="c"># 4. 端到端自检（2573 行代码，34 项断言）</span>
+<span class="c"># 4. 端到端自检（2718 行代码，34 项断言）</span>
 python selftest.py
 
 <span class="c"># 5. 复现本文全部评测数据与图表</span>
@@ -403,9 +413,9 @@ python build_portfolio.py</pre>
 
 <footer>
   <p style="margin:0">
-    数据生成时间 2026-10-16 21:26:05 ｜ 语料 12 篇 /
+    数据生成时间 2026-10-27 16:53:57 ｜ 语料 12 篇 /
     98 片段 / 3991 词项 ｜
-    评测 71 条领域内 + 7 条领域外
+    评测 143 条领域内 + 7 条领域外
   </p>
   <p class="note" style="margin-top:6px">
     本页所有图表与数字均由 <code class="mono">build_portfolio.py</code> 从

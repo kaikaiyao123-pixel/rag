@@ -34,10 +34,19 @@ SYSTEM_PROMPT = (
 
 _SENT_RE = re.compile(r"[^。！？；\n.!?;]+[。！？；.!?;]?")
 _MD_LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
+_IMG_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
 _WIKILINK_RE = re.compile(r"\[\[([^\]]*)\]\]")
 
 
 def _sentences(text: str) -> List[str]:
+    """切句。
+
+    图片语法必须在切句**之前**移除：``![成品](./000.jpg)`` 里的 ``!`` 与 ``.``
+    会被当成句末标点，把语法切成 ``[成品](.`` / ``/000.`` / ``jpg)`` 三段残片，
+    之后再想用链接正则还原已经不可能。菜谱类语料几乎每篇都带预览图，不处理
+    会让图片 alt 文本直接混进抽取式答案。
+    """
+    text = _IMG_RE.sub(" ", text)
     return [s.strip() for s in _SENT_RE.findall(text)]
 
 
