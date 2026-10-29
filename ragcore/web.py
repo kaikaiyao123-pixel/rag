@@ -527,6 +527,8 @@ def check_html(html: str) -> List[Tuple[str, bool, str]]:
                 'id="apikey"' in html and 'type="password"' in html.lower(), ""))
     out.append(("页面含保存与测试按钮",
                 'id="cfgsave"' in html and 'id="cfgtest"' in html, ""))
+    out.append(("页面含查询取消控件",
+                'id="cancel"' in html and "AbortController" in html, ""))
     return out
 
 

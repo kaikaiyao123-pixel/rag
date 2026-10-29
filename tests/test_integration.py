@@ -263,3 +263,20 @@ def tc_int_011() -> None:
     assert_ge(len(checks), 10, "检查项数量异常，可能被裁剪")
     failed = [f"{name}：{detail}" for name, ok, detail in checks if not ok]
     assert_eq(failed, [], "自包含检查存在失败项")
+
+
+@case("TC-INT-012", "REQ-WEB-10", "查询在途时提供进度反馈与取消能力",
+      technique="错误推测", level="集成",
+      expect="页面含取消按钮与 AbortController；超时上限取自服务端 llm.timeout；每秒刷新等待时长")
+def tc_int_012() -> None:
+    from ragcore.web import HTML_PATH
+
+    html = HTML_PATH.read_text(encoding="utf-8")
+    # 用户实测反馈「查询中卡死」：服务端并没有阻塞（配置快照后即释放锁），
+    # 卡住的是单个请求，但页面既没有进度也没有取消入口，几十秒的等待
+    # 在观感上就是死机。这三条断言锁住该能力，防止后续改版被删掉。
+    assert_in('id="cancel"', html)
+    assert_in("AbortController", html)
+    assert_in("meta.llm.timeout", html, "客户端超时应取自服务端配置，不能写死")
+    assert_in("setInterval", html, "已等待时长需定时刷新")
+    assert_not_in("innerHTML", html, "取消/计时逻辑不得引入 innerHTML")

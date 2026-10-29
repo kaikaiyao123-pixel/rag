@@ -196,6 +196,7 @@
     <textarea id="q" rows="3" placeholder="例如：如何导入已有笔记？"></textarea>
     <div class="controls">
       <button id="send" class="primary">提问</button>
+      <button id="cancel" class="ghost" hidden>取消</button>
       <label class="chk"><input type="checkbox" id="nollm"> 强制离线抽取</label>
       <label class="chk">召回
         <select id="topk">
@@ -295,6 +296,9 @@
   var $ = function (id) { return document.getElementById(id); };
   var meta = null;
   var busy = false;
+  var abortCtl = null;      // 当前在途请求的 AbortController
+  var timer = null;         // 已等待时长的刷新定时器
+  var abortReason = null;   // null | 'timeout' | 'user'
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -467,11 +471,32 @@
 
     busy = true;
     $('send').disabled = true;
-    $('send').textContent = '查询中…';
+    $('cancel').hidden = false;
+
+    // 大模型推理动辄数秒到数十秒。**没有进度反馈的等待会被当成卡死**，
+    // 所以这里做三件事：每秒刷新已等待时长、超过「服务端超时 + 10s」主动
+    // 中止、并提供取消按钮。服务端本身不会阻塞（ThreadingHTTPServer +
+    // 配置快照后释放锁），卡住的是这一个请求，不是整个页面。
+    var serverTimeout = (meta && meta.llm && meta.llm.timeout) || 60;
+    var limitMs = (serverTimeout + 10) * 1000;
+    var t0 = Date.now();
+    abortReason = null;
+
+    abortCtl = new AbortController();
+    $('send').textContent = '查询中… 0s';
+    timer = setInterval(function () {
+      var sec = Math.floor((Date.now() - t0) / 1000);
+      $('send').textContent = '查询中… ' + sec + 's';
+      if (Date.now() - t0 > limitMs && !abortReason) {
+        abortReason = 'timeout';
+        abortCtl.abort();
+      }
+    }, 1000);
 
     fetch('/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: abortCtl.signal,
       body: JSON.stringify({
         question: q,
         top_k: Number($('topk').value),
@@ -486,13 +511,35 @@
       render(res.data);
       $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }).catch(function (e) {
-      showError(e.message || String(e));
+      if (abortReason === 'timeout') {
+        showError('请求超过 ' + Math.round(limitMs / 1000) + ' 秒仍未返回，已中止。' +
+          '模型服务可能不可达或过慢——可在「模型设置」里点「测试连接」确认。');
+      } else if (abortReason === 'user') {
+        showError('已取消本次查询。');
+      } else {
+        showError(e.message || String(e));
+      }
     }).then(function () {
+      stopTimer();
+      abortCtl = null;
+      abortReason = null;
       busy = false;
       $('send').disabled = false;
       $('send').textContent = '提问';
+      $('cancel').hidden = true;
     });
   }
+
+  function stopTimer() {
+    if (timer) { clearInterval(timer); timer = null; }
+  }
+
+  $('cancel').addEventListener('click', function () {
+    if (abortCtl && !abortReason) {
+      abortReason = 'user';
+      abortCtl.abort();
+    }
+  });
 
   $('send').addEventListener('click', ask);
 

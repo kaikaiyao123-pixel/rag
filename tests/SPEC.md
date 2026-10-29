@@ -190,6 +190,7 @@
 | REQ-WEB-07 | web | 单个请求异常不得打挂服务 | 异常请求后服务仍能正常响应 |
 | REQ-WEB-08 | web | `/api/llm` 更新配置后可读回，且 `key_set` 状态正确 | 保存后 `GET /api/llm` 反映新值 |
 | REQ-WEB-09 | web | 页面自包含：`check_html` 拦截外部资源与 `innerHTML` | 真实页面全部检查项通过 |
+| REQ-WEB-10 | web | 查询在途时必须有进度反馈与取消能力：每秒刷新已等待时长，超过「服务端 `llm.timeout` + 10s」自动中止，并提供取消按钮 | 页面含 `id="cancel"` 与 `AbortController`；`check_html` 新增项通过 |
 
 ### 3.10 跨模块（meta）
 
