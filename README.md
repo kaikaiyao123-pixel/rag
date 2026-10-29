@@ -105,6 +105,37 @@ $env:RAG_API_KEY="sk-xxxxxxxx"
 > 允许留空。因此默认配置（填了 `api_base` 但没填密钥）会安静地走离线模式，
 > 不会每次都发起一次注定失败的请求。
 
+### 用第三方中转站 / 兼容接口
+
+代码里**没有任何域名白名单**：只要对端实现了 OpenAI 的
+`POST /chat/completions`（`Authorization: Bearer <key>` + 返回
+`choices[0].message.content`），就能直接用，中转站、自建网关、Azure 代理都一样。
+在页面「模型设置」填 `api_base` + `model` + 密钥即可，也可以写进 `config.json`。
+
+`api_base` 的拼接规则（实测七种写法）：
+
+| 你填的 `api_base` | 实际请求的地址 |
+| --- | --- |
+| `https://relay.example.com/v1` | `…/v1/chat/completions` |
+| `https://relay.example.com` | `…/v1/chat/completions` |
+| `https://relay.example.com/v1/` | `…/v1/chat/completions`（尾部斜杠被去掉） |
+| `https://relay.example.com/v1/chat/completions` | 原样使用 |
+| `https://relay.example.com/api/openai/v1` | `…/api/openai/v1/chat/completions` |
+
+> **唯一要小心的情况**：中转站给的前缀不以 `/v1` 结尾（如
+> `https://relay.example.com/api/openai`）。此时程序仍会补上 `/v1/chat/completions`，
+> 得到 `…/api/openai/v1/chat/completions`，多数中转站会返回 404。
+> **对策：把 `api_base` 一直填到 `/chat/completions` 为止**（程序见到该后缀就不再补），
+> 或确认对方的完整路径后填写。
+
+常见错误码对照：`401` 密钥无效或余额不足 · `403` 被 Cloudflare 拦 UA（本客户端
+UA 为 `Python-urllib/3.x`）· `404` 路径拼错 · `429` 限流 · `响应解析失败` 表示对端
+返回了非标准结构或流式响应。自签证书无法绕过（`urllib` 默认校验），需要先让
+证书受信任。
+
+> 密钥只存在于进程内存，重启即失效，接口响应仅回显末 4 位；页面与日志都不落盘。
+> 拒答判定在调用大模型**之前**执行，领域外问题不会消耗中转站额度。
+
 ## 换一份语料：菜谱知识库
 
 引擎本身与语料解耦，换一份文档只需换配置。仓库附带 `config.cook.json`，把

@@ -230,3 +230,32 @@ def tc_gen_013() -> None:
     ans = extractive_answer("团队版多少钱", hits, {})
     assert_not_in("以上为原文步骤", ans, "非程序性问题不得触发步骤路径")
     assert_in("25 元", ans)
+
+
+# api_base -> 请求地址的拼接规则（REQ-GEN-13）
+@case("TC-GEN-014", "REQ-GEN-13", "api_base 拼接规则与 README 对照表一致",
+      technique="等价类划分", level="单元",
+      expect="含 /chat/completions 原样；以 /v1 结尾补后缀；其余补 /v1/chat/completions；尾部斜杠被去除")
+def tc_gen_014() -> None:
+    def ep(base: str) -> str:
+        return LLMClient(api_base=base, api_key="sk-x", model="m")._endpoint()
+
+    # 标准写法：中转站 / 官方接口最常见的形式
+    assert_eq(ep("https://relay.example.com/v1"),
+              "https://relay.example.com/v1/chat/completions")
+    # 只填域名
+    assert_eq(ep("https://relay.example.com"),
+              "https://relay.example.com/v1/chat/completions")
+    # 尾部斜杠必须先去掉，否则会拼出 //chat/completions
+    assert_eq(ep("https://relay.example.com/v1/"),
+              "https://relay.example.com/v1/chat/completions")
+    # 已填到完整 endpoint：不得再补任何前缀
+    assert_eq(ep("https://relay.example.com/v1/chat/completions"),
+              "https://relay.example.com/v1/chat/completions")
+    # 自定义前缀 + /v1
+    assert_eq(ep("https://relay.example.com/api/openai/v1"),
+              "https://relay.example.com/api/openai/v1/chat/completions")
+    # 已知限制（README 已注明）：不带 /v1 的自定义前缀会被补成 …/v1/chat/completions，
+    # 多数中转站此时返回 404，用户需填到 /chat/completions 为止。
+    assert_eq(ep("https://relay.example.com/api/openai"),
+              "https://relay.example.com/api/openai/v1/chat/completions")
