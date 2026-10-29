@@ -154,6 +154,7 @@
 | REQ-GEN-09 | generator | `_endpoint` 按 `api_base` 形态补全 `/chat/completions` | 三种形态均得到完整 URL |
 | REQ-GEN-10 | generator | 非 JSON、结构不符、HTTP 错误、网络不可达均抛 `LLMError` | 异常类型正确且信息可读 |
 | REQ-GEN-11 | generator | ASCII 句点出现在文件名 / 版本号 / 小数中时不得被当作句末标点 | `.txt`、`.md`、`3.14`、`v2.3.0` 所在句子保持完整，不被切成残片 |
+| REQ-GEN-12 | generator | 程序性问题（怎么做 / 做法 / 步骤等）命中编号步骤列表时，按原序整段输出，且保留原文序号 | 输出以「1. 」开头、含全部步骤、末行标注引用编号；非程序性问题不受影响 |
 
 ### 3.7 文档加载（loader）
 

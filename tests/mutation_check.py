@@ -32,6 +32,9 @@ MUTATIONS = [
     ("M6 同义词扩展失效（别名不再追加）", "ragcore/query.py",
      '    return question + " " + " ".join(extra)', '    return question',
      ["TC-RET-005"]),
+    ("M7 关闭程序性问题的步骤路径", "ragcore/generator.py",
+     "            if len(steps) >= 3:", "            if len(steps) >= 999:",
+     ["TC-GEN-012"]),
 ]
 
 

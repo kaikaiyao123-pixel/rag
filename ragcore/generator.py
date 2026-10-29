@@ -20,7 +20,7 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from .tokenizer import tokenize
 
@@ -40,6 +40,11 @@ _SENT_SPLIT_RE = re.compile(r"(?<=[。！？；\n])|(?<=[.!?;])(?=\s|$)")
 _MD_LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 _IMG_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
 _WIKILINK_RE = re.compile(r"\[\[([^\]]*)\]\]")
+
+# 程序性问题：用户在问"怎么做"，答案的价值在**步骤顺序**上
+_PROCEDURAL_RE = re.compile(r"怎么做|怎么弄|怎么操作|怎么使用|如何做|怎样做|做法|步骤|流程|教程")
+# 有序列表项：允许 1. / 1、 / 1) 三种写法，缩进至多 3 空格（排除代码块内的深缩进）
+_STEP_RE = re.compile(r"^ {0,3}(\d{1,2})[.、)]\s+(\S.*)$")
 
 
 def _sentences(text: str) -> List[str]:
@@ -213,6 +218,40 @@ def _clean_fragment(text: str) -> Optional[str]:
     return s or None
 
 
+def _ordered_steps(text: str) -> List[Tuple[int, str]]:
+    """从片段原文中提取有序列表项，返回 ``[(原序号, 文本), ...]``。
+
+    只认 ``1.`` / ``1、`` / ``1)`` 三种写法，且缩进不超过 3 空格 —— 更深的缩进
+    通常是子条目或代码块内容，混进来会把"主步骤"淹掉。**保留原序号而不是
+    重新编号**：片段可能从列表中间开始（分块切断），重新编号会让用户以为
+    那才是第 1 步。
+    """
+    steps: List[Tuple[int, str]] = []
+    for line in text.splitlines():
+        m = _STEP_RE.match(line)
+        if not m:
+            continue
+        body = _clean_fragment(m.group(2))
+        if body:
+            steps.append((int(m.group(1)), body))
+    return steps
+
+
+def _format_steps(steps: List[Tuple[int, str]], rank: int, max_chars: int) -> str:
+    """把步骤按原序排版成答案，超长时截断并显式说明。"""
+    lines: List[str] = []
+    total = 0
+    for num, body in steps:
+        line = f"{num}. {body}"
+        if lines and total + len(line) > max_chars:
+            lines.append(f"…（原文共 {len(steps)} 步，受长度限制已截断）")
+            break
+        lines.append(line)
+        total += len(line)
+    lines.append(f"（以上为原文步骤 [{rank}]，按原顺序摘录，未做改写）")
+    return "\n".join(lines)
+
+
 def extractive_answer(question: str,
                       hits: List[Dict],
                       idf: Optional[Dict[str, float]] = None,
@@ -223,6 +262,11 @@ def extractive_answer(question: str,
     该模式不做任何推理，只是"从最相关的片段里挑出与问题重叠度最高的句子"。
     它能保证答案有据可查（不会幻觉），但无法综合多句、无法换算或比较数值，
     因此只作为未配置大模型时的降级方案。
+
+    **程序性问题走另一条路径**：问"怎么做"时，按重叠度挑句子会把步骤打乱、
+    还会把配料表里的条目混进来（实测「番茄炒鸡蛋怎么做」给出的第一条是
+    「可选：去掉西红柿的外表皮」，而真正的操作在另一个片段里）。步骤的价值
+    就在顺序，抽散等于没有，所以此时优先整段输出带编号的列表。
     """
     if not hits:
         return "根据现有资料无法回答该问题。"
@@ -231,6 +275,17 @@ def extractive_answer(question: str,
     q_terms = set(tokenize(question))
     if not q_terms:
         return "根据现有资料无法回答该问题。"
+
+    # 程序性问题的特殊路径：按排名找到第一个"本身是编号步骤列表"且与问题
+    # 有词项交集的片段，整段按原序输出。
+    if _PROCEDURAL_RE.search(question):
+        for rank, h in enumerate(hits, 1):
+            text = h.get("text", "")
+            if not (set(tokenize(text)) & q_terms):
+                continue
+            steps = _ordered_steps(text)
+            if len(steps) >= 3:
+                return _format_steps(steps, rank, max_chars)
 
     best = hits[0]["score"] or 1.0
     scored = []

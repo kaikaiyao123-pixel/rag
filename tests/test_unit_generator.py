@@ -189,3 +189,44 @@ def tc_gen_011() -> None:
     ans = extractive_answer("纯文本批量导入", hits, {})
     assert_in(".txt", ans)
     assert_in("文件会以文件名为标题导入", ans)
+
+
+# 程序性问题按原序输出编号步骤（REQ-GEN-12）
+@case("TC-GEN-012", "REQ-GEN-12", "问「怎么做」时按原序输出编号步骤",
+      technique="等价类划分", level="单元",
+      expect="答案以「1. 」开头、11 步齐全、末行标注引用；配料表片段被跳过")
+def tc_gen_012() -> None:
+    # 真实结构：rank1 是配料表（与问题词项高度重叠，按重叠度挑句子会先挑它），
+    # rank2 是简介，rank3 才是操作步骤。旧实现给出的第一条是
+    # 「可选：去掉西红柿的外表皮」—— 顺序全乱且混入别的片段。
+    hits = [
+        _hit("* 西红柿\n* 鸡蛋\n* 食用油\n* 盐", score=43.0),
+        _hit("一道酸甜开胃的家常菜肴。鸡蛋提供优质蛋白质，西红柿富含维生素 C。",
+             score=40.0),
+        _hit("1. 西红柿洗净\n2. 去蒂切块\n3. 鸡蛋打散加盐\n"
+             "4. 热锅下油倒入蛋液\n5. 关火盛出鸡蛋\n6. 下西红柿翻炒\n"
+             "7. 倒回鸡蛋炒匀\n8. 关火盛盘", score=39.0),
+    ]
+    ans = extractive_answer("番茄炒鸡蛋怎么做", hits, {})
+    assert_true(ans.startswith("1. 西红柿洗净"),
+                f"必须以第 1 步开头，实际 {ans.splitlines()[0]!r}")
+    assert_in("8. 关火盛盘", ans)
+    assert_in("[3]", ans, "末行应标注步骤所在片段序号")
+    assert_not_in("食用油", ans, "配料表不得混入步骤答案")
+    # 顺序必须与原文一致，不能按词项重叠度重排
+    assert_true(ans.index("4. 热锅下油") < ans.index("6. 下西红柿翻炒"),
+                "步骤顺序必须保持原文顺序")
+
+
+# 非程序性问题不受步骤路径影响（REQ-GEN-12 的反向约束）
+@case("TC-GEN-013", "REQ-GEN-12", "非程序性问题仍走按重叠度抽取的路径",
+      technique="等价类划分", level="单元",
+      expect="问「是什么」时不触发步骤整段输出，答案不出现「以上为原文步骤」")
+def tc_gen_013() -> None:
+    hits = [
+        _hit("1. 免费版可登录 3 台设备\n2. 团队版每人每月 25 元\n"
+             "3. 团队版支持私有化部署\n4. 团队版可管理成员权限", score=10.0),
+    ]
+    ans = extractive_answer("团队版多少钱", hits, {})
+    assert_not_in("以上为原文步骤", ans, "非程序性问题不得触发步骤路径")
+    assert_in("25 元", ans)
