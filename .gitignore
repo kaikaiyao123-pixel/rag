@@ -1,7 +1,14 @@
 .rag_index/
+.rag_index_cook/
 __pycache__/
 *.pyc
 config.json
+
+# 测试套件的临时目录（tests/fixtures.py 每次运行后自动删除）
+tests/.tmp/
+
+# JUnit 报告是 CI 消费的机器产物，每次都变，不入库；人读的 test_report.md 入库
+tests/test_report.xml
 
 # 简历构建工作目录（临时产物，与 RAG 项目无关）
 .resume_work/
