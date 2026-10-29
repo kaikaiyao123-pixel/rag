@@ -25,6 +25,10 @@ MUTATIONS = [
     ("M4 取消图片语法预清洗", "ragcore/generator.py",
      'text = _IMG_RE.sub(" ", text)', 'pass',
      ["TC-GEN-003"]),
+    ("M5 恢复「ASCII 句点无条件断句」", "ragcore/generator.py",
+     '_SENT_SPLIT_RE = re.compile(r"(?<=[。！？；\\n])|(?<=[.!?;])(?=\\s|$)")',
+     '_SENT_SPLIT_RE = re.compile(r"(?<=[。！？；\\n.!?;])")',
+     ["TC-GEN-011"]),
 ]
 
 

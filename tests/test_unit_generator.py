@@ -55,7 +55,7 @@ def tc_gen_002() -> None:
 # 图片语法必须在切句前移除（REQ-GEN-03，历史缺陷回归点）
 @case("TC-GEN-003", "REQ-GEN-03", "图片语法被整体移除，不残留路径与残片",
       technique="回归", level="单元",
-      expect="答案含「成品色泽红亮」且不含 jpg / 方括号残片")
+      expect="答案含「成品色泽红亮」，且不含 jpg / 000 / ![ / 孤立感叹号")
 def tc_gen_003() -> None:
     hits = [_hit("![成品](./000.jpg)成品色泽红亮，肥而不腻，入口即化。")]
     ans = extractive_answer("成品", hits, {})
@@ -63,6 +63,9 @@ def tc_gen_003() -> None:
     assert_not_in("jpg", ans)
     assert_not_in("000", ans)
     assert_not_in("![", ans)
+    # 若只在切句后清洗，`!` 会作为残片留在答案里（`!成品色泽红亮…`）。
+    # 只断言 "![" 抓不到这种情况——必须断言没有孤立的 ASCII 感叹号。
+    assert_not_in("!", ans)
 
 
 # 表格行处理判定表（REQ-GEN-04）
@@ -158,3 +161,31 @@ def tc_gen_010() -> None:
     client = LLMClient("https://api.x.com/v1", "", "m")
     assert_raises(LLMError, client.chat, [{"role": "user", "content": "hi"}],
                   contains="未配置")
+
+
+# ASCII 句点不得切断文件名 / 版本号 / 小数（REQ-GEN-11，真实缺陷回归点）
+@case("TC-GEN-011", "REQ-GEN-11", "ASCII 句点只在后接空白或串尾时断句",
+      technique="回归", level="单元",
+      expect="`.txt` / `3.14` / `v2.3.0` 所在句子完整；答案不再只剩「纯文本批量导入：.」")
+def tc_gen_011() -> None:
+    from ragcore.generator import _sentences
+
+    # 历史缺陷：`.txt` 里的点被当作句末，句子被切成 "…：`" 与 "txt` 文件会…"，
+    # 短残片被长度阈值过滤，最终答案只剩 "纯文本批量导入：."
+    s = _sentences("4. **纯文本批量导入**：`.txt` 文件会以文件名为标题导入，"
+                   "编码自动识别 UTF-8、GBK 与 Big5。")
+    assert_eq(len(s), 2, "只应在列表序号「4.」之后断开")
+    assert_in("`.txt` 文件会以文件名为标题导入", s[1])
+
+    assert_eq(_sentences("价格是 3.14 元。下一句在这里。"),
+              ["价格是 3.14 元。", "下一句在这里。"], "小数不得断句")
+    assert_eq(_sentences("版本 v2.3.0 已发布. 请升级."),
+              ["版本 v2.3.0 已发布.", "请升级."],
+              "版本号不得断句；ASCII 句点后接空白时仍应断句")
+
+    # 端到端：答案里必须能读到完整的文件名说明
+    hits = [_hit("4. **纯文本批量导入**：`.txt` 文件会以文件名为标题导入，"
+                 "编码自动识别 UTF-8、GBK 与 Big5。")]
+    ans = extractive_answer("纯文本批量导入", hits, {})
+    assert_in(".txt", ans)
+    assert_in("文件会以文件名为标题导入", ans)
