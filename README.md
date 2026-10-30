@@ -182,7 +182,8 @@ python rag_web.py --config config.cook.json --port 8766 --open
 | `python rag.py docs` | 列出已索引文档 |
 | `python rag.py config` | 显示生效配置（API Key 自动脱敏） |
 | `python rag_web.py` | 启动浏览器问答界面（默认 `127.0.0.1:8765`） |
-| `python rag_web.py --selftest` | 起真实服务逐项自检（67 项断言，无需浏览器） |
+| `python rag_web.py --selftest` | 起真实服务逐项自检（70 项断言，无需浏览器） |
+| `python build_test_dashboard.py` | 由实跑结果重新生成上面的测试覆盖总览图 |
 
 常用参数：
 
@@ -265,16 +266,18 @@ rag/
 ├── docs/                   示例知识库（虚构产品「云雀笔记」12 篇）
 ├── benchmark.py            基准评测：标注集 + 消融实验 + 阈值标定
 ├── build_portfolio.py      由评测数据生成单页 HTML 作品集
+├── build_test_dashboard.py 由实跑结果生成 README 用的测试覆盖总览图
 ├── portfolio/index.html    作品集页面（自包含，无外部资源）
 ├── selftest.py             端到端自检（34 项断言，无需联网）
-├── tests/                  软件测试套件（96 个用例，需求追溯 + 报告生成）
-│   ├── SPEC.md             测试规格：74 条需求与验收准则（唯一来源）
+├── tests/                  软件测试套件（105 个用例，需求追溯 + 报告生成）
+│   ├── SPEC.md             测试规格：81 条需求与验收准则（唯一来源）
 │   ├── run_tests.py        入口，输出 test_report.md / test_report.xml
 │   ├── harness.py          用例注册、断言助手、报告生成、框架自验证
 │   ├── fixtures.py         确定性小语料、临时目录、本地 HTTP 服务夹具
 │   └── test_*.py           单元 / 集成 / 鲁棒性 / 回归 / 性能 / 元测试
 ├── config.example.json     配置模板
 ├── benchmark_report.json   评测结果（由 benchmark.py 生成）
+├── assets/                 README 用图（功能测试覆盖总览）
 ├── code/C8/                复刻 all-in-rag 第 8 章（独立技术路线，见其 README）
 └── .rag_index/             索引输出（已 gitignore）
 ```
@@ -415,13 +418,23 @@ python build_portfolio.py  # 由评测数据生成 portfolio/index.html
 引入语义层面的相似度（向量召回或同义词扩展）—— 这也是本项目明确不做、但已知的
 结构性边界。
 
+## 功能测试覆盖总览
+
+![功能测试覆盖总览：34 项端到端自检 + 70 项 Web 链路自检 + 105 个用例覆盖 81 条需求，全部通过](assets/test_coverage.png)
+
+> 上图数据来自实际运行：`selftest.py`、`rag_web.py --selftest`、`tests/run_tests.py`
+> 与 `tests/mutation_check.py`。用例总数、需求数、分层与设计方法分布均由
+> `tests/test_report.md` 自动统计，可逐项复算。整张图由
+> `python build_test_dashboard.py` 重新生成——**图里没有任何硬编码数字**，
+> 改了测试集直接重跑即可，避免"图还在、数字已过期"。
+
 ## 自检
 
 ```bash
 python selftest.py            # 34 项断言：分词、分块、建库、检索、限流去重、
                               # 离线回答、代码块标题回归、持久化一致性，
                               # 以及 README 指标表与 benchmark_report.json 的一致性
-python rag_web.py --selftest  # 67 项断言：起真实 HTTP 服务跑完整请求链路
+python rag_web.py --selftest  # 70 项断言：起真实 HTTP 服务跑完整请求链路
 ```
 
 第 8 节「文档与评测数据一致性」会逐项比对 README 指标表的四个方法行与
@@ -451,7 +464,7 @@ SVG 几何自检（坐标越界、NaN、文字溢出画布），未通过则拒�
 `tests/` 是另一层，按工程标准组织：
 
 ```bash
-python tests/run_tests.py                  # 全量 96 个用例，写出 tests/test_report.md
+python tests/run_tests.py                  # 全量 105 个用例，写出 tests/test_report.md
 python tests/run_tests.py --junit          # 同时输出 JUnit XML，可直接喂 CI
 python tests/run_tests.py --filter chunker # 只跑编号/标题/需求含该关键字的用例
 python tests/run_tests.py --verify-harness # 只做框架反向验证
@@ -461,10 +474,10 @@ python tests/mutation_check.py             # 变异测试：注入缺陷，确�
 
 | 维度 | 规模 |
 | --- | --- |
-| 用例 | 96（单元 66 / 集成 18 / 系统 7 / 非功能 5） |
-| 需求 | 74 条，覆盖率 100%（`tests/SPEC.md` 是唯一来源，用例通过 `req_id` 引用） |
-| 设计方法 | 等价类 25 / 边界值 28 / 判定表 13 / 错误推测 18 / 回归 8 / 性能 4 |
-| 耗时 | 约 50 秒（含 4 次 CLI 子进程、8 个真实 HTTP 服务实例） |
+| 用例 | 105（单元 73 / 集成 20 / 系统 7 / 非功能 5） |
+| 需求 | 81 条，覆盖率 100%（`tests/SPEC.md` 是唯一来源，用例通过 `req_id` 引用） |
+| 设计方法 | 等价类 30 / 边界值 28 / 判定表 13 / 错误推测 20 / 回归 10 / 性能 4 |
+| 耗时 | 约 80 秒（随机器负载波动，以 `tests/test_report.md` 记录的当次值为准） |
 
 **三个关键设计**
 
@@ -474,9 +487,10 @@ python tests/mutation_check.py             # 变异测试：注入缺陷，确�
 2. **框架自己也要被测**。`--verify-harness` 注入必然通过 / 必然失败 / 必然抛
    异常三种探针，确认执行器分别判为 PASS / FAIL / ERROR，并确认 `assert_raises`
    在"本该抛异常却没抛"时会报错。**一个永远输出 PASS 的框架比没有测试更危险**。
-3. **用变异测试证明覆盖不是空的**。`mutation_check.py` 往产品代码注入 4 个已知
+3. **用变异测试证明覆盖不是空的**。`mutation_check.py` 往产品代码注入 7 个已知
    缺陷（放宽拒答阈值、取消代码块围栏保护、取消 overlap 上限、取消图片语法
-   预清洗），确认每个都被对应用例捕获，捕获率 4/4。
+   预清洗、恢复「ASCII 句点无条件断句」、同义词扩展失效、关闭程序性问题的步骤
+   路径），确认每个都被对应用例捕获，捕获率 7/7。
 
 **测出来的两个真实问题**
 
