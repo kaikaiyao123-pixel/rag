@@ -428,6 +428,19 @@ python build_portfolio.py  # 由评测数据生成 portfolio/index.html
 > `python build_test_dashboard.py` 重新生成——**图里没有任何硬编码数字**，
 > 改了测试集直接重跑即可，避免"图还在、数字已过期"。
 
+重新生成（`build_test_dashboard.py`，零第三方依赖，仅用系统 Chromium 出图）：
+
+```bash
+python build_test_dashboard.py            # 全量：实跑三套自检 + 变异测试，渲染 PNG
+python build_test_dashboard.py --no-mutation   # 跳过变异测试（约 2 分钟省掉），图上标注「未实跑」
+python build_test_dashboard.py --no-render     # 只生成 assets/_dashboard.html，不调用浏览器
+```
+
+> 注意：图右下角的「全量耗时」来自当次 `tests/test_report.md` 的实测值，
+> 每次运行都会有毫秒级抖动。改了测试集重出图后，**只提交数字真正变化的那次**，
+> 不要因为耗时抖动就反复重提交 PNG（与 `benchmark_report.json` 的抖动处理同理）。
+> 占位符守卫：模板若残留 `@@name@@` 未替换，脚本会报错并拒绝出图。
+
 ## 自检
 
 ```bash
