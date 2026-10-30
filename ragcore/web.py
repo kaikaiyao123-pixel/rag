@@ -529,6 +529,9 @@ def check_html(html: str) -> List[Tuple[str, bool, str]]:
                 'id="cfgsave"' in html and 'id="cfgtest"' in html, ""))
     out.append(("页面含查询取消控件",
                 'id="cancel"' in html and "AbortController" in html, ""))
+    # 进度反馈与取消分开断言：只有取消按钮而看不到「已等待 N 秒」时，用户仍然
+    # 无法判断是慢还是卡死，两者缺一不可。
+    out.append(("页面含等待进度提示", 'id="pending"' in html, ""))
     return out
 
 
